@@ -9,9 +9,8 @@ Greetings commander!
 ## Installation
 
 ### Step 1: Download the Project
-Download the project to your local machine:
-- Navigate to the GitHub page where the project is hosted.
-- Click on the `Code` button and then select `Download ZIP`.
+Download this project to your local machine:
+- Click on the green`Code` button and then select `Download ZIP`.
 
 ### Step 2: Unzip the Files
 Locate the downloaded ZIP file on your computer and extract it to a desired location. We'll refer to this location as the "project folder" from now on.
