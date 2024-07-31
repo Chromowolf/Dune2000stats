@@ -49,3 +49,15 @@ After you have set up everything, you can run the application by following these
    python main_app.py
    ```
    This will start the application based on the `main_app.py` Python script.
+   
+
+
+## Usage Manual
+
+### General Usage
+- Run the program once after starting your PC. You do not need to reopen it between gameplays. The program automatically detects any Dune 2000 process and attaches to it.
+- The application shows live stats only when you are a spectator in the game. Otherwise it will display only the summary stats after the game ends.
+
+### Interface and Controls
+- **Refresh Button**: Click this button to refresh the current UI. Use this feature if there is a visual glitch, such as the stats not being fully displayed.
+- **Export Button**: Saves the stats from the last game. This allows you to keep a record of game statistics for later review.
