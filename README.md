@@ -10,7 +10,7 @@ Greetings commander!
 
 ### Step 1: Download the Project
 Download this project to your local machine:
-- Click on the green`Code` button and then select `Download ZIP`.
+- Click on the green `Code` button and then select `Download ZIP`.
 
 ### Step 2: Unzip the Files
 Locate the downloaded ZIP file on your computer and extract it to a desired location. We'll refer to this location as the "project folder" from now on.
