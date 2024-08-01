@@ -1,8 +1,5 @@
 # Dune 2000 stats helper by Pere
 
-## Introduction
-Greetings commander!
-
 ## Prerequisites
 - You must be using a Windows operating system.
 
