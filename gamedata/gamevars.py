@@ -9,6 +9,13 @@ class GameVariable:
         # (2) vars initialized/refreshed/reset when game starts
         self._initialize_attributes()
 
+    def update_from_instance(self, other_instance):
+        """Update the current instance's attributes from another GameVariable instance."""
+        if isinstance(other_instance, GameVariable):
+            self.__dict__.update(other_instance.__dict__)
+        else:
+            raise TypeError("Expected an instance of GameVariable")
+
     def _initialize_attributes(self):
         self.gGameState = 1
         self.game_finished = False  # True when some player wins

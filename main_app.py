@@ -1,5 +1,4 @@
 # Modified from "HookProcess\Print_playerinfo_as_table_effi.py" on 2024-04-16
-
 import warnings
 
 import ctypes
@@ -16,10 +15,7 @@ from gamedata.unitsdata import *
 
 from GetProcessIDctypes import get_d2k_pid
 import tkinter as tk
-from tkinter import ttk, filedialog, messagebox
-
-import shutil
-import os
+from tkinter import ttk
 
 # from helpers import *  # Already included game_vars!
 from memrw import color_idx_to_name, side_idx_to_name, color_idx_to_hex_string
@@ -37,10 +33,12 @@ from redirect_output import setup_logging, close_logging
 
 from dump_data import dump_game_data
 
+from file_operations import export_stats, import_stats  # Import the functions from the new module
+
 # Suppress FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated...
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
-debug_mode = False
+debug_mode = True
 
 in_game = False
 in_game_prev = False  # if the game starts when last time we check
@@ -85,24 +83,24 @@ game_end_state_dict = {
 # gv.gGameTicks = 0
 # gv.gGameTicks_prev = 0
 
-def get_g_var_name_and_addr():
-    cur_addr = 0x4C94A8
-    while cur_addr <= 0x4CA820:
-        cur_str = ""
-        var_name = global_handle.read_simple_data(cur_addr, ctypes.create_string_buffer(60)).decode()
-        cur_str += var_name
-        cur_addr += 60
-        var_addr = global_handle.read_simple_data(cur_addr, ctypes.c_uint32())
-        cur_str += f": 0x{var_addr:06X}"
-        cur_addr += 4
-        _4th_byte = global_handle.read_simple_data(cur_addr + 3, ctypes.c_uint8())
-        while not _4th_byte:  # 4th byte is null, meaning this is pointer, or null
-            var_addr = global_handle.read_simple_data(cur_addr, ctypes.c_uint32())
-            if var_addr:
-                cur_str += f", 0x{var_addr:06X}"
-            cur_addr += 4
-            _4th_byte = global_handle.read_simple_data(cur_addr + 3, ctypes.c_uint8())
-        print(cur_str)
+# def get_g_var_name_and_addr():
+#     cur_addr = 0x4C94A8
+#     while cur_addr <= 0x4CA820:
+#         cur_str = ""
+#         var_name = global_handle.read_simple_data(cur_addr, ctypes.create_string_buffer(60)).decode()
+#         cur_str += var_name
+#         cur_addr += 60
+#         var_addr = global_handle.read_simple_data(cur_addr, ctypes.c_uint32())
+#         cur_str += f": 0x{var_addr:06X}"
+#         cur_addr += 4
+#         _4th_byte = global_handle.read_simple_data(cur_addr + 3, ctypes.c_uint8())
+#         while not _4th_byte:  # 4th byte is null, meaning this is pointer, or null
+#             var_addr = global_handle.read_simple_data(cur_addr, ctypes.c_uint32())
+#             if var_addr:
+#                 cur_str += f", 0x{var_addr:06X}"
+#             cur_addr += 4
+#             _4th_byte = global_handle.read_simple_data(cur_addr + 3, ctypes.c_uint8())
+#         print(cur_str)
 
 
 def exec_in_game():
@@ -303,6 +301,7 @@ def exec_in_game():
 
     game_end_state_str = game_end_state_dict.get(gv.game_end_state, "Unknown game end state")
     app.set_title(
+        f'[Started: {gv.game_start_timestamp.strftime('%Y-%m-%d %H:%M:%S')}] '
         f'Elapsed time: {timedelta(seconds=gv.real_second)}, effective time: {gv.effective_sec}, game ticks: {gv.gGameTicks}, '
         f'Avg Speed: {gv.average_game_speed:.2f}, '
         f'Map: {gv.map_name}. '
@@ -341,6 +340,7 @@ def on_game_start():
     """
     Run once on game start, initialized game variables
     """
+    import_button.config(state=tk.DISABLED)
     gv.clear()  # reset to default values
     gv.spawner_active = global_handle.read_simple_data(mem.SpawnerActive_ADDR, ctypes.c_bool())
     if gv.spawner_active:
@@ -532,13 +532,7 @@ def on_game_end():
         update_stats()
         app.update_table()  # Need to update table again when game ends?
 
-    game_end_state_str = game_end_state_dict.get(gv.game_end_state, f"Unknown game end state ({gv.game_end_state})")
-    app.set_title(
-        f'Elapsed time: {timedelta(seconds=gv.real_second)}, effective time: {gv.effective_sec}, game ticks: {gv.gGameTicks}, '
-        f'Avg Speed: {gv.average_game_speed:.2f}, '
-        f'Map: {gv.map_name}. '
-        f'End status: {game_end_state_str}, '
-    )
+    app.set_title_after_game()
 
     # f'. Mouse pos: ({gv.mouse_pos_map_tile_x:>3}, {gv.mouse_pos_map_tile_y:>3}), 0x{cur_tile_addr:06X}')
     if gv.number_of_player < 2:
@@ -554,6 +548,7 @@ def on_game_end():
 
     # Dump data to pickle:
     dump_game_data(gv)
+    import_button.config(state=tk.NORMAL)
 
     # # Dump data to tables
     # if gv.number_of_player > 1:
@@ -892,6 +887,16 @@ class PandasTableApp:
         # Run every loop.
         self.root.title(new_title)
 
+    def set_title_after_game(self):
+        game_end_state_str = game_end_state_dict.get(gv.game_end_state, "Unknown game end state")
+        self.set_title(
+            f'[Started: {gv.game_start_timestamp.strftime('%Y-%m-%d %H:%M:%S')}] '
+            f'Elapsed time: {timedelta(seconds=gv.real_second)}, effective time: {gv.effective_sec}, game ticks: {gv.gGameTicks}, '
+            f'Avg Speed: {gv.average_game_speed:.2f}, '
+            f'Map: {gv.map_name}. '
+            f'End status: {game_end_state_str} '
+        )
+
 
 def refresh_UI():
     root.geometry(f'{app_width}x{app_height}')
@@ -899,33 +904,12 @@ def refresh_UI():
     app.force_redraw()
 
 
-def export_stats():
-    # Prompting user to select filename and directory with a default name and extension
-    dest_fn = datetime.now().strftime("%Y-%m-%d_%H-%M-%S.pkl")
-    file_path = filedialog.asksaveasfilename(
-        defaultextension=".pkl",
-        filetypes=[("pkl files", "*.pkl")],
-        initialfile=dest_fn,
-        title="Export stats file as"
-    )
-    if file_path:
-        # Defining the source file
-        source_file = os.path.join("stats", 'last_game.pkl')
-        try:
-            # Copy the file
-            shutil.copy(source_file, file_path)
-            print(f"Game stats successfully exported to {file_path}")
-        except FileNotFoundError:
-            messagebox.showerror("Error", "Stats file not found. Please ensure to export after game ends.")
-        except Exception as e:
-            messagebox.showerror("Error", f"An error occurred: {str(e)}")
-
-
 if __name__ == "__main__":
     log_file = setup_logging()
 
     # tk part
     root = tk.Tk()
+    root.iconbitmap("app_icon.ico")  # ? Is it python icon or the icon of the compiled exe?
     app_width = 1280
     app_height = 760
     root.geometry(f'{app_width}x{app_height}')
@@ -943,6 +927,10 @@ if __name__ == "__main__":
     # Refresh button
     refresh_button = ttk.Button(button_frame, text="Refresh", command=refresh_UI)
     refresh_button.pack(side=tk.LEFT, padx=5, pady=5)
+
+    # Import button
+    import_button = ttk.Button(button_frame, text="Import", command=lambda: import_stats(app))
+    import_button.pack(side=tk.LEFT, padx=5, pady=5)
 
     # Export button
     export_button = ttk.Button(button_frame, text="Export", command=export_stats)
