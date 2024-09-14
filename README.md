@@ -45,8 +45,6 @@ After you have set up everything, you can run the application by following these
    ```
    python main_app.py
    ```
-   This will start the application based on the `main_app.py` Python script.
-   
 
 
 ## Usage Manual
@@ -57,4 +55,5 @@ After you have set up everything, you can run the application by following these
 
 ### Interface and Controls
 - **Refresh Button**: Click this button to refresh the current UI. Use this feature if there is a visual glitch, such as the stats not being fully displayed.
+- **Import Button**: Loads a previously saved stats file and updates the app to display the loaded statistics.
 - **Export Button**: Saves the stats from the last game. This allows you to keep a record of game statistics for later review.
