@@ -1,4 +1,3 @@
-# Modified from "HookProcess\Print_playerinfo_as_table_effi.py" on 2024-04-16
 import warnings
 
 import ctypes
@@ -10,8 +9,8 @@ from memrw import global_handle
 from memrw.read_tables import read_array, read_u32_table  # Later discard
 
 from gamedata.gamevars import game_vars as gv
-
 from gamedata.unitsdata import *
+from enums import *
 
 from GetProcessIDctypes import get_d2k_pid
 import tkinter as tk
@@ -44,41 +43,6 @@ in_game = False
 in_game_prev = False  # if the game starts when last time we check
 exe_initialized = False  # The run-once flag for init_at_running
 
-VICTORY_STATUS_ABSENT = 0
-VICTORY_STATUS_UNDETERMINED = 1
-VICTORY_STATUS_SPECTATING = 2
-VICTORY_STATUS_LOSS = 3
-VICTORY_STATUS_WIN = 4
-VICTORY_STATUS_DEFEATED = 5
-
-victory_status_dict = {
-    VICTORY_STATUS_ABSENT: "Absent",
-    VICTORY_STATUS_UNDETERMINED: "Playing",
-    VICTORY_STATUS_SPECTATING: "Spec",
-    VICTORY_STATUS_LOSS: "Loss",
-    VICTORY_STATUS_WIN: "Win",
-    VICTORY_STATUS_DEFEATED: "Defeat",  # Not necessarily loss
-}
-
-# Defined in "inc\dune2000.inc"
-GES_ENDEDNORMALLY = 0
-GES_ISURRENDERED = 1
-GES_OPPONENTSURRENDERED = 2
-GES_OUTOFSYNC = 3
-GES_CONNECTIONLOST = 4
-GES_WASHGAME = 5
-GES_DRAWGAME = 6
-GES_UNKNOWNENDSTATE = 7
-game_end_state_dict = {
-    GES_ENDEDNORMALLY: "Ended normally",
-    GES_ISURRENDERED: "I surrendered",
-    GES_OPPONENTSURRENDERED: "Opponent surrendered",
-    GES_OUTOFSYNC: "Out of sync",
-    GES_CONNECTIONLOST: "Connection lost",
-    GES_WASHGAME: "Wash game",
-    GES_DRAWGAME: "Draw game",
-    GES_UNKNOWNENDSTATE: "Unknown end state",
-}
 
 # gv.gGameTicks = 0
 # gv.gGameTicks_prev = 0
@@ -230,7 +194,8 @@ def exec_in_game():
 
             if gv.gDeadOrder[p] == -1:  # player still in game, update the before-defeated stats
                 gv.spice_before_defeated[p] = gv.spice[p]
-                gv.harvester_count_before_defeated[p] = gv.harvester_count[p]
+                if not (gv.harvester_count[p] == 0 and gv.harvester_count_before_defeated[p] > 5):  # not sudden drop
+                    gv.harvester_count_before_defeated[p] = gv.harvester_count[p]
             # Spice wasted
             # if gv.spice[p] == gv.spice_capacity[p]:  # silos needed
             #     gv.spice_wasted[p] += gv.spice_harvested[p] - gv.last_spice_harvested[p] - (
@@ -256,6 +221,16 @@ def exec_in_game():
             if power_supply < power_load:  # low power
                 gv.low_power_ticks[p] += gv.game_tick_diff
                 gv.low_power_time_actual[p] += gv.real_timestamp_diff_sec
+
+            # buildings killed and lost
+            gv.total_buildings_killed_count[p] = global_handle.read_simple_data(
+                TOTAL_BUILDINGS_KILLED + cur_pl_offset,
+                ctypes.c_int32()
+            )
+            gv.total_buildings_lost_count[p] = global_handle.read_simple_data(
+                TOTAL_BUILDINGS_LOST + cur_pl_offset,
+                ctypes.c_int32()
+            )
 
         #########################
         # Efficiency related, capture unit production
@@ -739,12 +714,16 @@ def get_data_table():
 
         # ("Unit Expense (handicap1)", gv.unit_expense_handicap1),
         # ("Building Expense (handicap1)", gv.building_expense_handicap1),
+        ("Buildings Destroyed Count", gv.total_buildings_killed_count),
+        ("Buildings Lost Count", gv.total_buildings_lost_count),
+
         ("Units Killed Count", gv.total_units_killed_count),
         ("Units Lost Count", gv.total_units_lost_count),
-        ("Units Killed Cost", gv.total_units_killed_cost),
-        ("Units Lost Cost", gv.total_units_lost_cost),
-        ("Units Killed Train Time", gv.total_units_killed_train_time),
-        ("Units Lost Train Time", gv.total_units_lost_train_time),
+
+        ("Units Killed Score", gv.total_units_killed_cost),
+        ("Units Lost Score", gv.total_units_lost_cost),
+        # ("Units Killed Train Time", gv.total_units_killed_train_time),
+        # ("Units Lost Train Time", gv.total_units_lost_train_time),
 
 
         ("Low Power (game ticks)", gv.low_power_ticks),
@@ -834,8 +813,8 @@ class PandasTableApp:
         for rw in [
             "Credits (before defeated)",
             "Spice Harvested",
-            "Units Killed Cost",
-            "Units Lost Cost",
+            "Units Killed Count",
+            "Units Lost Count",
             "Low Power (game ticks)",
             "Low Power (real seconds)",
             "Refineries Owned",

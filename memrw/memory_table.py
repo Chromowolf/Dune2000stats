@@ -34,9 +34,11 @@ BUILDINGS_OWNING_TABLE = 0x7BCE30  # u8[104] for each player
 
 UNITS_OWNED_TABLE = 0x7BCFF8  # u32[60] for each player
 BUILDINGS_OWNED_TABLE = 0x7BD0E8  # u32[100] for each player
+TOTAL_BUILDINGS_LOST = 0x7BD27C
 UNITS_LOST_TABLE = 0x7BD280  # u32[60] for each player
 UNITS_KILLED_TABLE = 0x7BD508  # u32[60][8] for each player
 
+TOTAL_BUILDINGS_KILLED = 0x7BD504
 #############################
 # CNCnet
 #############################

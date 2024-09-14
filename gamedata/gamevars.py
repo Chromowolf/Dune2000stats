@@ -268,6 +268,9 @@ class GameVariable:
         self.building_efficiency_handicap1 = np.zeros(8)
 
         # Other calculated
+        self.total_buildings_killed_count = np.zeros(8, dtype=int)
+        self.total_buildings_lost_count = np.zeros(8, dtype=int)
+
         self.total_units_killed_count = np.zeros(8, dtype=int)
         self.total_units_lost_count = np.zeros(8, dtype=int)
         self.total_units_killed_cost = np.zeros(8, dtype=int)
