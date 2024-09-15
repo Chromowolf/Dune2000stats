@@ -1,5 +1,6 @@
 import warnings
-
+import sys
+import os
 import ctypes
 # import time
 from datetime import timedelta, datetime, timezone
@@ -888,7 +889,22 @@ if __name__ == "__main__":
 
     # tk part
     root = tk.Tk()
-    root.iconbitmap("app_icon.ico")  # ? Is it python icon or the icon of the compiled exe?
+
+    exe_path = sys.argv[0]
+    icon_path = "app_icon.ico"
+
+    # Set the window icon to app_icon.ico if it exists, else use the exe path icon
+    if os.path.exists(icon_path):
+        try:
+            root.iconbitmap(icon_path)
+        except Exception as e:
+            print(f"Error setting custom icon: {e}")
+    else:
+        try:
+            root.iconbitmap(exe_path)
+        except Exception as e:
+            print(f"Error setting executable icon: {e}")
+
     app_width = 1280
     app_height = 760
     root.geometry(f'{app_width}x{app_height}')
