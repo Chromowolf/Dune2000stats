@@ -899,11 +899,11 @@ if __name__ == "__main__":
             root.iconbitmap(icon_path)
         except Exception as e:
             print(f"Error setting custom icon: {e}")
-    else:
-        try:
-            root.iconbitmap(exe_path)
-        except Exception as e:
-            print(f"Error setting executable icon: {e}")
+    # else:
+    #     try:
+    #         root.iconbitmap(exe_path)
+    #     except Exception as e:
+    #         print(f"Error setting executable icon: {e}")
 
     app_width = 1280
     app_height = 760
