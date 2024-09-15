@@ -38,7 +38,7 @@ from file_operations import export_stats, import_stats  # Import the functions f
 # Suppress FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated...
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
-debug_mode = True
+debug_mode = False
 
 in_game = False
 in_game_prev = False  # if the game starts when last time we check
