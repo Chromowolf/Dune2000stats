@@ -504,23 +504,24 @@ def on_game_end():
     """
     Run once on game end
     """
-    if gv.gGameTicks > app.last_update_gametick:
-        update_stats()
-        app.update_table()  # Need to update table again when game ends?
-
-    app.set_title_after_game()
-
-    # f'. Mouse pos: ({gv.mouse_pos_map_tile_x:>3}, {gv.mouse_pos_map_tile_y:>3}), 0x{cur_tile_addr:06X}')
     if gv.number_of_player < 2:
-        print(f"Failed to connect!")
-    n_pl = len(gv.player_names)
-    print(f"[{datetime.now().strftime('%H:%M:%S')}]: Game ended.")
+        print(f"[{datetime.now().strftime('%H:%M:%S')}] Failed to connect! Game ended")
+    else:
+        if gv.gGameTicks > app.last_update_gametick:
+            update_stats()
+            app.update_table()  # Need to update table again when game ends?
 
-    total_freeze_seconds_dict = dict(zip(gv.player_names, gv.total_freeze_seconds[:n_pl]))
-    print(f"Total freeze seconds: {total_freeze_seconds_dict}")
-    # print(gv.infantry_gameticks_delicated_production)
-    # print(gv.light_gameticks_delicated_production)
-    # print(gv.heavy_gameticks_delicated_production)
+        app.set_title_after_game()
+
+        # f'. Mouse pos: ({gv.mouse_pos_map_tile_x:>3}, {gv.mouse_pos_map_tile_y:>3}), 0x{cur_tile_addr:06X}')
+        n_pl = len(gv.player_names)
+        print(f"[{datetime.now().strftime('%H:%M:%S')}]: Game ended.")
+
+        total_freeze_seconds_dict = dict(zip(gv.player_names, gv.total_freeze_seconds[:n_pl]))
+        print(f"Total freeze seconds: {total_freeze_seconds_dict}")
+        # print(gv.infantry_gameticks_delicated_production)
+        # print(gv.light_gameticks_delicated_production)
+        # print(gv.heavy_gameticks_delicated_production)
 
     # Dump data to pickle:
     dump_game_data(gv)
@@ -789,6 +790,8 @@ class PandasTableApp:
             self.table.redraw()
 
     def set_cells_color(self):
+        if gv.number_of_player < 2:  # Game failed to start
+            return
         if 'Colour' in self.summary_df.index:
             color_row_index = self.summary_df.index.get_loc("Colour")
             for p in range(gv.number_of_player):
@@ -827,10 +830,12 @@ class PandasTableApp:
 
     def update_table(self):
         """
-        Run every second.
+        Run every second. Must make sure gv.number_of_player >= 2
         Can only be called when the get_data_table() returns a DataFrame containing real data!\
         :return:
         """
+        if gv.number_of_player < 2:  # Failed to connect
+            return
 
         self.summary_df = get_data_table()  # Update the related info and get the data
 
