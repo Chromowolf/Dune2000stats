@@ -341,7 +341,7 @@ def on_game_start():
     gv.my_offset = gv.me * 0x26990
     gv.game_start_timestamp = datetime.now()
     gv.game_start_timestamp_utc = datetime.now(timezone.utc)
-    print("====================================")
+    print("=" * 40)
     print(f"[{gv.game_start_timestamp.strftime('%H:%M:%S')}]: New game detected! Game ticks: {gv.gGameTicks}")
     print(f"[Debug] SpawnerActive = {global_handle.read_simple_data(mem.SpawnerActive_ADDR, ctypes.c_bool())}")
     # print(f"{gv.map_width=}, {gv.map_height=}, {gv.game_width=}, {gv.game_height=}")
@@ -659,6 +659,7 @@ def monitor_process():
         else:
             if n < 1:
                 print(f"Searching for d2k process...")
+                print("=" * 40)
                 # Force reset the tk UI and force update
                 root.geometry(f'{app_width}x{app_height}')
                 root.update_idletasks()
