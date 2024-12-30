@@ -53,7 +53,7 @@ class GameVariable:
         # Times
         self.game_start_timestamp = 0  # datetime object
         self.game_start_timestamp_utc = 0  # datetime object (UTC)
-        self.elapsed_real_sec = 0  # float, in seconds, = (real_timestamp - game_start_timestamp).total_seconds()
+        self.elapsed_real_sec: float = 0  # float, in seconds, = (real_timestamp - game_start_timestamp).total_seconds()
         self.real_second = 0
         self.real_second_prev = 0
         self.gGameTicks = 0

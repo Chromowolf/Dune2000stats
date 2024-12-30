@@ -41,4 +41,3 @@ def close_logging(log_file):
 
     # Close the log file
     log_file.close()
-
