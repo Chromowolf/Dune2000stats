@@ -659,7 +659,7 @@ def monitor_process():
         else:
             if n < 1:
                 print(f"Searching for d2k process...")
-                print("=" * 40)
+                # print("=" * 40)
                 # Force reset the tk UI and force update
                 root.geometry(f'{app_width}x{app_height}')
                 root.update_idletasks()

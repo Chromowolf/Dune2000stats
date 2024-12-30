@@ -125,6 +125,7 @@ class ProcessHandle:
             if not ctypes.windll.kernel32.CloseHandle(self._handle):
                 raise Exception(f"Could not close handle. Error code: {ctypes.GetLastError()}")
             print(f"The handle hooked to process {self._pid} has been closed.")
+            print("=" * 40)
             self._handle = None
 
 
