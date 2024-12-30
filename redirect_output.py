@@ -5,9 +5,9 @@ import datetime
 
 def get_log_file_path():
     # Get today's date
-    today = datetime.date.today()
+    now_time = datetime.datetime.now()
     # Format the filename with today's date
-    filename = f"console_output_{today.strftime('%Y-%m-%d')}.txt"
+    filename = f"console_output_{now_time.strftime('%Y-%m-%d_%H-%M-%S')}.txt"
     # Construct the full path
     return os.path.join("logs", filename)
 
@@ -22,8 +22,8 @@ def setup_logging():
     log_file = open(path, "a", buffering=1)  # Line buffering
 
     # Add a timestamp separator
-    now = datetime.datetime.now()
-    log_file.write(f"======= {now.strftime('%H:%M:%S')} =========\n")
+    # now = datetime.datetime.now()
+    # log_file.write(f"======= {now.strftime('%H:%M:%S')} =========\n")
     log_file.flush()
 
     # Redirect stdout and stderr to the log file

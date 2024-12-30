@@ -154,7 +154,7 @@ def exec_in_game():
             # Update has_quitted
             if not gv.has_quitted[p] and gv.left_game_at[p] >= 0:
                 gv.has_quitted[p] = True
-                print(f"[{datetime.now().strftime('%H:%M:%S')}]: Player {gv.player_names[p]} has left the game at game tick = {gv.gGameTicks}")
+                print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}]: Player {gv.player_names[p]} has left the game at game tick = {gv.gGameTicks}")
 
             # Update victory status
             is_ally = gv.mutual_alliance_matrix[p, :]  # (8, ) bool
@@ -342,7 +342,7 @@ def on_game_start():
     gv.game_start_timestamp = datetime.now()
     gv.game_start_timestamp_utc = datetime.now(timezone.utc)
     print("=" * 40)
-    print(f"[{gv.game_start_timestamp.strftime('%H:%M:%S')}]: New game detected! Game ticks: {gv.gGameTicks}")
+    print(f"[{gv.game_start_timestamp.strftime('%Y-%m-%d %H:%M:%S')}]: New game detected! Game ticks: {gv.gGameTicks}")
     print(f"[Debug] SpawnerActive = {global_handle.read_simple_data(mem.SpawnerActive_ADDR, ctypes.c_bool())}")
     # print(f"{gv.map_width=}, {gv.map_height=}, {gv.game_width=}, {gv.game_height=}")
     print(f"Map name: {gv.map_name}")
@@ -505,7 +505,7 @@ def on_game_end():
     Run once on game end
     """
     if gv.number_of_player < 2:
-        print(f"[{datetime.now().strftime('%H:%M:%S')}] Failed to connect! Game ended")
+        print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] Failed to connect! Game ended")
     else:
         if gv.gGameTicks > app.last_update_gametick:
             update_stats()
@@ -515,7 +515,7 @@ def on_game_end():
 
         # f'. Mouse pos: ({gv.mouse_pos_map_tile_x:>3}, {gv.mouse_pos_map_tile_y:>3}), 0x{cur_tile_addr:06X}')
         n_pl = len(gv.player_names)
-        print(f"[{datetime.now().strftime('%H:%M:%S')}]: Game ended.")
+        print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}]: Game ended.")
 
         total_freeze_seconds_dict = dict(zip(gv.player_names, gv.total_freeze_seconds[:n_pl]))
         print(f"Total freeze seconds: {total_freeze_seconds_dict}")
@@ -553,7 +553,7 @@ def exec_while_running():
     # Debug
     gv.NetPlayerCount = global_handle.read_simple_data(0x7984C0, ctypes.c_uint8())  # number of human players
     if debug_mode and gv.NetPlayerCount != gv.NetPlayerCount_prev:
-        print(f"[Debug] {datetime.now().strftime('%H:%M:%S')}: gGameTick = {global_handle.read_simple_data(0x5173F4, ctypes.c_uint32())}, NetPlayerCount = {gv.NetPlayerCount}")
+        print(f"[Debug] {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: gGameTick = {global_handle.read_simple_data(0x5173F4, ctypes.c_uint32())}, NetPlayerCount = {gv.NetPlayerCount}")
 
     # Basic key variables
     gv.gGameTicks = global_handle.read_simple_data(0x5173F4, ctypes.c_uint32())
@@ -598,7 +598,7 @@ def init_at_running():
     mem.set_handle(global_handle)
     mem.initialize_addresses()
     # print(f"[Debug] Map Name At 0x{mem.CNC_MAP_NAME:08X}")
-    print(f"{datetime.now().strftime('%H:%M:%S')}:")
+    print(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}:")
     # print(f"[Debug] SpawnerActive At 0x{mem.SpawnerActive_ADDR:08X}")
     # print(f"[Debug] UnitTracker At 0x{mem.UNITS_OWNED_TABLE_CNC:08X}")
     # print(f"[Debug] BuildingTracker At 0x{mem.BUILDINGS_OWNED_TABLE_CNC:08X}")
@@ -625,7 +625,7 @@ def monitor_process():
 
             # Debug
             # if gv.gGameState != 2 or (gv.gGameState == 2 and gv.gGameTicks < 30):
-            #     print(f"{datetime.now().strftime('%H:%M:%S.%f')[:-3]}, "
+            #     print(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]}, "
             #           f"SpawnerActive = {global_handle.read_simple_data(mem.SpawnerActive_ADDR, ctypes.c_bool())}, "
             #           f"gGameState = {global_handle.read_simple_data(0x4DFB08, ctypes.c_int32())}, "
             #           f"gGameType = {global_handle.read_simple_data(0x797E34, ctypes.c_int32())}, "
@@ -653,7 +653,7 @@ def monitor_process():
             mem.set_handle(None)  # clear the handle inside the MemoryAddress
         pid = get_d2k_pid()
         if pid is not None:
-            print(f"{datetime.now().strftime('%H:%M:%S')}: Dune2000 process found.")
+            print(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Dune2000 process found.")
             global_handle.open_handle(pid)  # open the handle hooked to d2k process
             root.after(100, monitor_process)  # delay 0.1s
         else:
