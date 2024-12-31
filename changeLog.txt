@@ -1,0 +1,16 @@
+2024-12-31
+Fixed a bug that the app crashes when the game fails to connect.
+Reformatted the log info.
+
+2024-09-15
+Added: Import button.
+Added game start time in the header.
+
+2024-07-21
+Added: Game End status
+Live stats are now displayed only when you are a spectator. For all other players, stats will be shown only after the game ends.
+Added: Refresh button and Export button
+Credits and Harvest Count are now the stats before player defeated.
+
+2024-06-13
+Fixed a bug that the apps hooks to dune2000config.exe and crashes.
