@@ -7,3 +7,5 @@ stats/
 logs/
 game_report_data/
 *.txt
+!changelog.txt
+!requirements.txt
