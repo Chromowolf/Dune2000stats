@@ -1,4 +1,5 @@
 import tkinter as tk
+from tkinter import ttk
 from gamedata.gamevars import game_vars as gv
 from memrw import color_idx_to_name, side_idx_to_name, color_idx_to_hex_string
 # import numpy as np
@@ -96,7 +97,7 @@ class PandasTableApp:
         self.root.title('Dune2000 Game Stats Helper')
 
         # Initialize the pandastable frame
-        self.table_frame = tk.Frame(self.root)
+        self.table_frame = ttk.Frame(self.root)
         self.table_frame.pack(fill=tk.BOTH, expand=True)
 
         self.table = None  # Placeholder for the actual table that links to summary_df
