@@ -26,6 +26,7 @@ import capture_production
 # import pandas as pd
 import numpy as np
 from pandas_table_app import PandasTableApp
+from buttons_right import RightButtons
 
 from find_cliques import find_maximal_cliques_with_pivot
 
@@ -699,11 +700,21 @@ def refresh_UI():
 
 
 if __name__ == "__main__":
+    # Symbols: ┌ ┐ └ ┘ ┬ ┴ ├ ┤
+    #
+    # ┌-------------------------------┐
+    # | Table Frame (LabelFrame)      |
+    # ├-------------------------------┤
+    # |┌--------------┬--------------┐|
+    # || Left buttons | Right buttons||
+    # |└--------------┴--------------┘|
+    # └-------------------------------┘
+
     log_file = setup_logging()
 
     # tk part
     root = tk.Tk()
-    root.title("D2k Stats Helper")
+    root.title("Dune2000 Statistics Helper")
 
     exe_path = sys.argv[0]
     icon_path = "app_icon.ico"
@@ -742,17 +753,31 @@ if __name__ == "__main__":
     button_frame = ttk.Frame(root)
     button_frame.pack(side=tk.BOTTOM, fill=tk.X, padx=10, pady=10)
 
+    left_button_frame = ttk.Frame(button_frame)
+    left_button_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+
+    right_button_frame = ttk.Frame(button_frame, borderwidth=5)
+    right_button_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
+
+    ###############
+    # Left buttons
+    ###############
     # Refresh button
-    refresh_button = ttk.Button(button_frame, text="Refresh", command=refresh_UI)
+    refresh_button = ttk.Button(left_button_frame, text="Refresh", command=refresh_UI)
     refresh_button.pack(side=tk.LEFT, padx=5, pady=5)
 
     # Import button
-    import_button = ttk.Button(button_frame, text="Import", command=lambda: import_stats(app))
+    import_button = ttk.Button(left_button_frame, text="Import", command=lambda: import_stats(app))
     import_button.pack(side=tk.LEFT, padx=5, pady=5)
 
     # Export button
-    export_button = ttk.Button(button_frame, text="Export", command=export_stats)
+    export_button = ttk.Button(left_button_frame, text="Export", command=export_stats)
     export_button.pack(side=tk.LEFT, padx=5, pady=5)
+
+    ###############
+    # Right buttons
+    ###############
+    RightButtons(right_button_frame)
 
     n = 0  # Number of seconds passed when searching for d2k process
     monitor_process()

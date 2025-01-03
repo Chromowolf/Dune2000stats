@@ -1,4 +1,4 @@
-import tkinter as tk
+# import tkinter as tk
 from tkinter import ttk
 from gamedata.gamevars import game_vars as gv
 from memrw import color_idx_to_name, side_idx_to_name, color_idx_to_hex_string
