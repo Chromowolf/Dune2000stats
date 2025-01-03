@@ -756,7 +756,7 @@ if __name__ == "__main__":
     left_button_frame = ttk.Frame(button_frame)
     left_button_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
-    right_button_frame = ttk.Frame(button_frame, borderwidth=5)
+    right_button_frame = ttk.Frame(button_frame, borderwidth=1, relief=tk.SOLID)
     right_button_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
 
     ###############
