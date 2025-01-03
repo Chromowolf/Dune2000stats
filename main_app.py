@@ -703,6 +703,7 @@ if __name__ == "__main__":
 
     # tk part
     root = tk.Tk()
+    root.title("D2k Stats Helper")
 
     exe_path = sys.argv[0]
     icon_path = "app_icon.ico"
@@ -719,13 +720,21 @@ if __name__ == "__main__":
     #     except Exception as e:
     #         print(f"Error setting executable icon: {e}")
 
-    app_width = 1280
-    app_height = 760
+    app_width = 1400
+    app_height = 800
     root.geometry(f'{app_width}x{app_height}')
-    app = PandasTableApp(root)
-    s = ttk.Style()  # Create a ttk style object, to change the font of ttl.Button
+
+    s = ttk.Style()  # Create a ttk style object, to change the font of ttk.Button
     # Set the font size for the style. The name must end with ".TButton"
     s.configure('yahei20.TLabel', font=("Microsoft YaHei", 20))
+    # Configure the style for TLabelFrame.Label
+    s.configure('yahei10.TLabelframe')
+    s.configure('yahei10.TLabelframe.Label', font=("Microsoft YaHei", 10))
+
+    # Create the frame of the table app
+    table_frame = ttk.LabelFrame(root, text="No game data found", style="yahei10.TLabelframe")
+    table_frame.pack(fill=tk.BOTH, expand=True)
+    app = PandasTableApp(table_frame)
 
     # refresh_button = ttk.Button(root, text="Refresh", command=refresh_UI)
     # refresh_button.pack()

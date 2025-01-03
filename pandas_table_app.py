@@ -92,13 +92,13 @@ def get_data_table():
     return df
 
 class PandasTableApp:
-    def __init__(self, rt):
-        self.root = rt
-        self.root.title('Dune2000 Game Stats Helper')
+    def __init__(self, master):
+        self.root: ttk.Labelframe = master
+        # self.root.title('Dune2000 Game Stats Helper')
 
         # Initialize the pandastable frame
-        self.table_frame = ttk.Frame(self.root)
-        self.table_frame.pack(fill=tk.BOTH, expand=True)
+        # self.table_frame = ttk.Frame(self.root)
+        # self.table_frame.pack(fill=tk.BOTH, expand=True)
 
         self.table = None  # Placeholder for the actual table that links to summary_df
         self.summary_df = None  # The pandas dataframe holding the summary data
@@ -160,7 +160,7 @@ class PandasTableApp:
 
         if self.table is None:
             # If the table hasn't been created, create it
-            self.table = Table(self.table_frame, dataframe=self.summary_df, showtoolbar=False, showstatusbar=False)
+            self.table = Table(self.root, dataframe=self.summary_df, showtoolbar=False, showstatusbar=False)
             # Once the table is linked to a dataframe, then the UI will auto refresh when drag-and-drop the UI, or when functions like redraw() or setRowColors() is called
 
             self.table.showIndex()
@@ -177,8 +177,6 @@ class PandasTableApp:
         self.table.redraw()
 
         self.last_update_gametick = gv.gGameTicks
-        # Schedule the next update in 1 second (1000 milliseconds)
-        # self.root.after(1000, self.update_table)
 
     def reset_table(self):
         if self.table is not None:
@@ -189,7 +187,8 @@ class PandasTableApp:
 
     def set_title(self, new_title):
         # Run every loop.
-        self.root.title(new_title)
+        # self.root.title(new_title)  # If self.root is the root of tk
+        self.root.configure(text=new_title)  # If self.root is a LabelFrame
 
     def set_title_after_game(self):
         game_end_state_str = game_end_state_dict.get(gv.game_end_state, "Unknown game end state")
