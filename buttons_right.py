@@ -18,14 +18,14 @@ class RightButtons:
         self.button_list.append(self.plot_economy_button)
 
         # Units
-        self.plot_harvesters_button = ttk.Button(self.master, text="Harvesters", command=lambda: plot_harvesters(self.root))
-        self.plot_harvesters_button.pack(side=tk.LEFT, padx=5, pady=5)
-        self.button_list.append(self.plot_harvesters_button)
-
-        # Buildings
-        self.plot_units_owned_button = ttk.Button(self.master, text="Units Owned", command=lambda: plot_units_owned(self.root))
+        self.plot_units_owned_button = ttk.Button(self.master, text="Units", command=lambda: plot_units_owned(self.root))
         self.plot_units_owned_button.pack(side=tk.LEFT, padx=5, pady=5)
         self.button_list.append(self.plot_units_owned_button)
+
+        # Buildings
+        self.plot_buildings_button = ttk.Button(self.master, text="Buildings", command=lambda: plot_buildings(self.root))
+        self.plot_buildings_button.pack(side=tk.LEFT, padx=5, pady=5)
+        self.button_list.append(self.plot_buildings_button)
 
     def enable_all_buttons(self):
         for bt in self.button_list:

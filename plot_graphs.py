@@ -5,7 +5,13 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 from enums import color_idx_to_hex_string
-from gamedata.unitsdata import HARVESTER_INDEX
+from gamedata.unitsdata import (
+    CARRYALL_INDEX,
+    CARRYALL2_INDEX,
+    CHOAM_FRIGATE_INDEX,
+    HARVESTER_INDEX,
+    NUM_UNITS
+)
 
 def create_ts_plot_at_frame(frame, x, y, stacked=False, proportion=False, colors=None, legend_labels=None):
     """
@@ -93,14 +99,14 @@ def plot_economy(root):
     #############
     # Credits
     #############
-    credits_frame_line = ttk.LabelFrame(notebook)
+    credits_frame_line = ttk.Frame(notebook)
     notebook.add(credits_frame_line, text="Credits (Line)")
     credits_frame_stacked = ttk.Frame(notebook)
     notebook.add(credits_frame_stacked, text="Credits (Stacked)")
     credits_frame_proportion = ttk.Frame(notebook)
     notebook.add(credits_frame_proportion, text="Credits (Proportion)")
 
-    if not hasattr(gv, "credits_list"):
+    if not hasattr(gv, "credits_list") or not gv.credits_list:
         ttk.Label(credits_frame_line, text="No credits data found!", style="yahei20.TLabel").pack()
         ttk.Label(credits_frame_stacked, text="No credits data found!", style="yahei20.TLabel").pack()
         ttk.Label(credits_frame_proportion, text="No credits data found!", style="yahei20.TLabel").pack()
@@ -118,14 +124,14 @@ def plot_economy(root):
     #############
     # Harvesters
     #############
-    harv_frame_line = ttk.LabelFrame(notebook)
+    harv_frame_line = ttk.Frame(notebook)
     notebook.add(harv_frame_line, text="Harvester Count (Line)")
     harv_frame_stacked = ttk.Frame(notebook)
     notebook.add(harv_frame_stacked, text="Harvester Count (Stacked)")
     harv_frame_proportion = ttk.Frame(notebook)
     notebook.add(harv_frame_proportion, text="Harvester Count (Proportion)")
 
-    if not hasattr(gv, "units_count_list"):
+    if not hasattr(gv, "units_count_list") or not gv.units_count_list:
         ttk.Label(harv_frame_line, text="No harvesters data found!", style="yahei20.TLabel").pack()
         ttk.Label(harv_frame_stacked, text="No harvesters data found!", style="yahei20.TLabel").pack()
         ttk.Label(harv_frame_proportion, text="No harvesters data found!", style="yahei20.TLabel").pack()
@@ -141,7 +147,8 @@ def plot_economy(root):
         # --- Create the 3rd tab (Proportion Plot) ---
         create_ts_plot_at_frame(harv_frame_proportion, gv.game_ticks_list, harv_data_2d, stacked=True, proportion=True, colors=colors, legend_labels=labels)
 
-def plot_harvesters(root):
+
+def plot_units_owned(root):
     plot_window = tk.Toplevel(root)
     plot_window.title("Units Plot")
     plot_window.geometry("1280x720")
@@ -149,7 +156,78 @@ def plot_harvesters(root):
         ttk.Label(plot_window, text="No game data!", style="yahei20.TLabel").pack()
         return
 
-def plot_units_owned(root):
+    # Create a Notebook (tabs)
+    notebook = ttk.Notebook(plot_window)
+    notebook.pack(expand=True, fill="both")
+
+    # colors:
+    colors = [color_idx_to_hex_string.get(c, "#000000") for c in gv.player_colors[:gv.number_of_player]]
+    labels = gv.player_names
+
+    units_count_frame_line = ttk.Frame(notebook)
+    notebook.add(units_count_frame_line, text="Units Count (Line)")
+
+    units_count_frame_stacked = ttk.Frame(notebook)
+    notebook.add(units_count_frame_stacked, text="Units Count (Stacked)")
+
+    units_count_frame_proportion = ttk.Frame(notebook)
+    notebook.add(units_count_frame_proportion, text="Units Count (Proportion)")
+
+    units_value_frame_line = ttk.Frame(notebook)
+    notebook.add(units_value_frame_line, text="Units Value (Line)")
+
+    units_value_frame_stacked = ttk.Frame(notebook)
+    notebook.add(units_value_frame_stacked, text="Units Value (Stacked)")
+
+    units_value_frame_proportion = ttk.Frame(notebook)
+    notebook.add(units_value_frame_proportion, text="Units Value (Proportion)")
+
+    if not hasattr(gv, "units_count_list") or not gv.units_count_list:
+        ttk.Label(units_count_frame_line, text="No units data found!", style="yahei20.TLabel").pack()
+        ttk.Label(units_count_frame_stacked, text="No units data found!", style="yahei20.TLabel").pack()
+        ttk.Label(units_count_frame_proportion, text="No units data found!", style="yahei20.TLabel").pack()
+        ttk.Label(units_value_frame_line, text="No units data found!", style="yahei20.TLabel").pack()
+        ttk.Label(units_value_frame_stacked, text="No units data found!", style="yahei20.TLabel").pack()
+        ttk.Label(units_value_frame_proportion, text="No units data found!", style="yahei20.TLabel").pack()
+    else:
+        units_data_3d = np.stack(gv.units_count_list, axis=1)  # get (8, n, NUM_UNITS)
+        unit_cost_arr = gv.unit_cost_handicap1.copy()  # shape (NUM_UNITS, )
+        unit_ones = np.ones(NUM_UNITS, dtype=np.int32)
+        unit_cost_arr[[CARRYALL_INDEX, CARRYALL2_INDEX, CHOAM_FRIGATE_INDEX]] = 0  # setting irrelevent units to 0
+        unit_ones[[CARRYALL_INDEX, CARRYALL2_INDEX, CHOAM_FRIGATE_INDEX]] = 0  # setting irrelevent units to 0
+
+        unit_counts_2d_8p = units_data_3d @ unit_ones  # (8, n)
+        unit_counts_2d = unit_counts_2d_8p[:gv.number_of_player, :]
+
+        unit_values_2d_8p = units_data_3d @ unit_cost_arr  # (8, n)
+        unit_values_2d = unit_values_2d_8p[:gv.number_of_player, :]
+
+        # --- Create the first tab (Normal) ---
+        create_ts_plot_at_frame(units_count_frame_line, gv.game_ticks_list, unit_counts_2d, stacked=False, proportion=False,
+                                colors=colors, legend_labels=labels)
+
+        # --- Create the 2nd tab (Normal stacked) ---
+        create_ts_plot_at_frame(units_count_frame_stacked, gv.game_ticks_list, unit_counts_2d, stacked=True,
+                                proportion=False, colors=colors, legend_labels=labels)
+
+        # --- Create the 3rd tab (Proportion Plot) ---
+        create_ts_plot_at_frame(units_count_frame_proportion, gv.game_ticks_list, unit_counts_2d, stacked=True,
+                                proportion=True, colors=colors, legend_labels=labels)
+
+        # --- Create the first tab (Normal) ---
+        create_ts_plot_at_frame(units_value_frame_line, gv.game_ticks_list, unit_values_2d, stacked=False, proportion=False,
+                                colors=colors, legend_labels=labels)
+
+        # --- Create the 2nd tab (Normal stacked) ---
+        create_ts_plot_at_frame(units_value_frame_stacked, gv.game_ticks_list, unit_values_2d, stacked=True,
+                                proportion=False, colors=colors, legend_labels=labels)
+
+        # --- Create the 3rd tab (Proportion Plot) ---
+        create_ts_plot_at_frame(units_value_frame_proportion, gv.game_ticks_list, unit_values_2d, stacked=True,
+                                proportion=True, colors=colors, legend_labels=labels)
+
+
+def plot_buildings(root):
     plot_window = tk.Toplevel(root)
     plot_window.title("Buildings Plot")
     plot_window.geometry("1280x720")
