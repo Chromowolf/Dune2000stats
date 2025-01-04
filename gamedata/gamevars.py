@@ -11,6 +11,7 @@ class GameVariable:
 
     def update_from_instance(self, other_instance):
         """Update the current instance's attributes from another GameVariable instance."""
+        self._initialize_attributes()
         if isinstance(other_instance, GameVariable):
             self.__dict__.update(other_instance.__dict__)
         else:
@@ -120,37 +121,37 @@ class GameVariable:
         ############################
         # Basic units and building stats
         ############################
-        self.building_cost = np.zeros(NUM_BUILDINGS, dtype=int)  # initialized once
-        self.building_build_speed = np.zeros(NUM_BUILDINGS, dtype=int)  # initialized once
-        self.building_progress_per_tick = np.zeros((8, NUM_UNITS), dtype=int)  # initialized once
-        self.building_build_time_ticks_actual = np.zeros((8, NUM_BUILDINGS), dtype=int)  # initialized once
+        self.building_cost = np.zeros(NUM_BUILDINGS, dtype=np.int32)  # initialized once
+        self.building_build_speed = np.zeros(NUM_BUILDINGS, dtype=np.int32)  # initialized once
+        self.building_progress_per_tick = np.zeros((8, NUM_UNITS), dtype=np.int32)  # initialized once
+        self.building_build_time_ticks_actual = np.zeros((8, NUM_BUILDINGS), dtype=np.int32)  # initialized once
 
-        self.unit_cost = np.zeros(NUM_UNITS, dtype=int)  # initialized once
-        self.unit_build_speed = np.zeros(NUM_UNITS, dtype=int)  # initialized once
-        self.unit_progress_per_tick = np.zeros((8, NUM_UNITS), dtype=int)  # initialized once
-        self.unit_build_time_ticks_actual = np.zeros((8, NUM_UNITS), dtype=int)  # initialized once
+        self.unit_cost = np.zeros(NUM_UNITS, dtype=np.int32)  # initialized once
+        self.unit_build_speed = np.zeros(NUM_UNITS, dtype=np.int32)  # initialized once
+        self.unit_progress_per_tick = np.zeros((8, NUM_UNITS), dtype=np.int32)  # initialized once
+        self.unit_build_time_ticks_actual = np.zeros((8, NUM_UNITS), dtype=np.int32)  # initialized once
         # handicap 1 stat:
-        self.building_cost_handicap1 = np.zeros(NUM_BUILDINGS, dtype=int)  # initialized once
-        self.unit_cost_handicap1 = np.zeros(NUM_UNITS, dtype=int)  # initialized once
-        self.building_progress_per_tick_handicap1 = np.zeros(NUM_UNITS, dtype=int)  # initialized once
-        self.building_build_time_ticks_handicap1 = np.zeros(NUM_BUILDINGS, dtype=int)  # initialized once
-        self.unit_progress_per_tick_handicap1 = np.zeros(NUM_UNITS, dtype=int)  # initialized once
-        self.unit_build_time_ticks_handicap1 = np.zeros(NUM_UNITS, dtype=int)  # initialized once
+        self.building_cost_handicap1 = np.zeros(NUM_BUILDINGS, dtype=np.int32)  # initialized once
+        self.unit_cost_handicap1 = np.zeros(NUM_UNITS, dtype=np.int32)  # initialized once
+        self.building_progress_per_tick_handicap1 = np.zeros(NUM_UNITS, dtype=np.int32)  # initialized once
+        self.building_build_time_ticks_handicap1 = np.zeros(NUM_BUILDINGS, dtype=np.int32)  # initialized once
+        self.unit_progress_per_tick_handicap1 = np.zeros(NUM_UNITS, dtype=np.int32)  # initialized once
+        self.unit_build_time_ticks_handicap1 = np.zeros(NUM_UNITS, dtype=np.int32)  # initialized once
 
-        self.buildings_owned = np.zeros((8, NUM_BUILDINGS), dtype=int)  # 8 players, 62 types of buildings
+        self.buildings_owned = np.zeros((8, NUM_BUILDINGS), dtype=np.int32)  # 8 players, 62 types of buildings
         self.building_groups_count = np.zeros((8, NUM_BUILDING_GROUPS), dtype=np.uint8)  # 8 players, 24 building groups. Buildings currently owned. Used for plotting
 
-        self.units_owned = np.zeros((8, NUM_UNITS), dtype=int)  # 8 players, 30 types of units
-        self.units_owned_at_start = np.zeros((8, NUM_UNITS), dtype=int)  # initialized once when game tick > 0
-        self.starting_units_excluding_mvc = np.zeros((8, NUM_UNITS), dtype=int)  # initialized once when game tick > 0, together with units_owned_at_start, used to calculate cncnet effi
+        self.units_owned = np.zeros((8, NUM_UNITS), dtype=np.int32)  # 8 players, 30 types of units
+        self.units_owned_at_start = np.zeros((8, NUM_UNITS), dtype=np.int32)  # initialized once when game tick > 0
+        self.starting_units_excluding_mvc = np.zeros((8, NUM_UNITS), dtype=np.int32)  # initialized once when game tick > 0, together with units_owned_at_start, used to calculate cncnet effi
 
         self.units_count = np.zeros((8, NUM_UNITS), dtype=np.int32)  # 8 players, 30 types of units. Units currently owned. Used for plotting
 
-        self.units_lost = np.zeros((8, NUM_UNITS), dtype=int)  # 8 players, 62 types of buildings
-        self.units_killed_detail = np.zeros((8, NUM_UNITS, 8), dtype=int)  # 8 players, 30 types of units, 8 p
-        self.units_killed = np.zeros((8, NUM_UNITS), dtype=int)  # 8 players, 30 types of units, 8 p
+        self.units_lost = np.zeros((8, NUM_UNITS), dtype=np.int32)  # 8 players, 62 types of buildings
+        self.units_killed_detail = np.zeros((8, NUM_UNITS, 8), dtype=np.int32)  # 8 players, 30 types of units, 8 p
+        self.units_killed = np.zeros((8, NUM_UNITS), dtype=np.int32)  # 8 players, 30 types of units, 8 p
 
-        self.refineries_owned = np.zeros(8, dtype=int)  # Updated when _update_buildings_owned() is called
+        self.refineries_owned = np.zeros(8, dtype=np.int32)  # Updated when _update_buildings_owned() is called
         # Used for calculating efficiency
         # Only limited types of units are counted
         # self.units_owned_effi = np.zeros((8, NUM_UNITS), dtype=int)  # later unused
@@ -163,31 +164,31 @@ class GameVariable:
         # self.total_effi_handicap1 = np.zeros(8)  # later unused
 
         # Unused?
-        self.last_units_owned = np.zeros((8, NUM_UNITS), dtype=int)  # 8 players, 30 types of units
+        self.last_units_owned = np.zeros((8, NUM_UNITS), dtype=np.int32)  # 8 players, 30 types of units
 
         #######################
         # Begin: Must be run in every loop!
         ######################
         # Actual efficiency, tracking all build slots
-        self.build_slot_progress = np.zeros((8, 10), dtype=int)  # 8 players, 10 slots
-        self.last_build_slot_progress = np.zeros((8, 10), dtype=int)  # 8 players, 10 slots
+        self.build_slot_progress = np.zeros((8, 10), dtype=np.int32)  # 8 players, 10 slots
+        self.last_build_slot_progress = np.zeros((8, 10), dtype=np.int32)  # 8 players, 10 slots
         self.build_unit_type = np.full((8, 10), -1, dtype=np.int16)  # 8 players, 10 slots
         self.last_build_unit_type = np.full((8, 10), -1, dtype=np.int16)  # 8 players, 10 slots
         self.build_slot_on_hold = np.zeros((8, 10), dtype=bool)  # 8 players, 10 slots
         self.last_build_slot_on_hold = np.zeros((8, 10), dtype=bool)  # 8 players, 10 slots
 
         # Units from delivery
-        self.delivery_queues = np.full((8, 10, 40), -1, dtype=int)  # 8 players, 10 queues, 40 slots per queue
-        self.last_delivery_queues = np.full((8, 10, 40), -1, dtype=int)  # 8 players, 10 queues, 40 slots per queue
+        self.delivery_queues = np.full((8, 10, 40), -1, dtype=np.int32)  # 8 players, 10 queues, 40 slots per queue
+        self.last_delivery_queues = np.full((8, 10, 40), -1, dtype=np.int32)  # 8 players, 10 queues, 40 slots per queue
 
         # Store the units owned from different sources:
         # (1) Directly produced
-        self.units_produced = np.zeros((8, NUM_UNITS), dtype=int)  # 8 players, 30 types of units
+        self.units_produced = np.zeros((8, NUM_UNITS), dtype=np.int32)  # 8 players, 30 types of units
         # (2) From starport delivery
-        self.units_from_starport = np.zeros((8, NUM_UNITS), dtype=int)  # starport purchase + reinforments
+        self.units_from_starport = np.zeros((8, NUM_UNITS), dtype=np.int32)  # starport purchase + reinforments
         # (3) From carryall delivery
-        self.reinforcements_from_carryall = np.zeros((8, NUM_UNITS), dtype=int)  # Carryall reinforcement (excluding from ref)
-        self.harvs_from_ref = np.zeros((8, NUM_UNITS), dtype=int)  # Harvesters delivered when refineries are built
+        self.reinforcements_from_carryall = np.zeros((8, NUM_UNITS), dtype=np.int32)  # Carryall reinforcement (excluding from ref)
+        self.harvs_from_ref = np.zeros((8, NUM_UNITS), dtype=np.int32)  # Harvesters delivered when refineries are built
         # (1)+(2)+(3) should equal to units_owned - units_owned_at_start, at index [1:18].
         # For index 0 (light infantry), the latter contains light infantries obtained from selling buildings
         # For index after 18, they might not match. For example: carryall2, choamfrigate, Ornithopter (x3), Fremen (x2)
@@ -275,23 +276,23 @@ class GameVariable:
         self.building_efficiency_handicap1 = np.zeros(8)
 
         # Other calculated
-        self.total_buildings_killed_count = np.zeros(8, dtype=int)
-        self.total_buildings_lost_count = np.zeros(8, dtype=int)
+        self.total_buildings_killed_count = np.zeros(8, dtype=np.int32)
+        self.total_buildings_lost_count = np.zeros(8, dtype=np.int32)
 
-        self.total_units_killed_count = np.zeros(8, dtype=int)
-        self.total_units_lost_count = np.zeros(8, dtype=int)
-        self.total_units_killed_cost = np.zeros(8, dtype=int)
-        self.total_units_lost_cost = np.zeros(8, dtype=int)
-        self.total_units_killed_train_time = np.zeros(8, dtype=int)
-        self.total_units_lost_train_time = np.zeros(8, dtype=int)
+        self.total_units_killed_count = np.zeros(8, dtype=np.int32)
+        self.total_units_lost_count = np.zeros(8, dtype=np.int32)
+        self.total_units_killed_cost = np.zeros(8, dtype=np.int32)
+        self.total_units_lost_cost = np.zeros(8, dtype=np.int32)
+        self.total_units_killed_train_time = np.zeros(8, dtype=np.int32)
+        self.total_units_lost_train_time = np.zeros(8, dtype=np.int32)
 
-        self.unit_expense_handicap1 = np.zeros(8, dtype=int)
-        self.building_expense_handicap1 = np.zeros(8, dtype=int)
+        self.unit_expense_handicap1 = np.zeros(8, dtype=np.int32)
+        self.building_expense_handicap1 = np.zeros(8, dtype=np.int32)
 
         # Manually calculate efficiency (tracking units produced)
-        self.units_produced = np.zeros((8, NUM_UNITS), dtype=int)
-        self.producing_slots_unit_type = np.zeros((8, 10), dtype=int)
-        self.producing_slots_unit_type = np.zeros((8, 10), dtype=int)
+        self.units_produced = np.zeros((8, NUM_UNITS), dtype=np.int32)
+        self.producing_slots_unit_type = np.zeros((8, 10), dtype=np.int32)
+        self.producing_slots_unit_type = np.zeros((8, 10), dtype=np.int32)
 
         ############################
         # Other live stats
@@ -305,29 +306,29 @@ class GameVariable:
         self.low_power_ticks = [0] * 8
         self.low_power_time_actual = np.zeros(8, dtype=float)
 
-        self.spice = np.zeros(8, dtype=int)  # credits = cash + spice
-        self.spice_before_defeated = np.zeros(8, dtype=int)  # credits_before_defeated = cash + spice_before_defeated
-        self.spice_capacity = np.zeros(8, dtype=int)
-        self.spice_buffer = np.zeros(8, dtype=int)
-        self.cash = np.zeros(8, dtype=int)  # credits = cash + spice
-        self.spice_harvested = np.zeros(8, dtype=int)
+        self.spice = np.zeros(8, dtype=np.int32)  # credits = cash + spice
+        self.spice_before_defeated = np.zeros(8, dtype=np.int32)  # credits_before_defeated = cash + spice_before_defeated
+        self.spice_capacity = np.zeros(8, dtype=np.int32)
+        self.spice_buffer = np.zeros(8, dtype=np.int32)
+        self.cash = np.zeros(8, dtype=np.int32)  # credits = cash + spice
+        self.spice_harvested = np.zeros(8, dtype=np.int32)
 
-        self.last_spice = np.zeros(8, dtype=int)
-        self.last_spice_harvested = np.zeros(8, dtype=int)
-        self.last_spice_buffer = np.zeros(8, dtype=int)
+        self.last_spice = np.zeros(8, dtype=np.int32)
+        self.last_spice_harvested = np.zeros(8, dtype=np.int32)
+        self.last_spice_buffer = np.zeros(8, dtype=np.int32)
         self.spice_wasted = [0] * 8
         self.spice_wasted2 = [0] * 8  # a difference algorithm
 
-        self.harvester_count_before_defeated = np.zeros(8, dtype=int)  # Current harvesters owned, before defeated
-        self.harvester_count = np.zeros(8, dtype=int)  # Current harvesters owned
+        self.harvester_count_before_defeated = np.zeros(8, dtype=np.int32)  # Current harvesters owned, before defeated
+        self.harvester_count = np.zeros(8, dtype=np.int32)  # Current harvesters owned
 
-        self.total_orders_received = np.zeros(8, dtype=int)  # OPM related
-        self.left_game_at = np.zeros(8, dtype=int)  # Game tick when the player left game
+        self.total_orders_received = np.zeros(8, dtype=np.int32)  # OPM related
+        self.left_game_at = np.zeros(8, dtype=np.int32)  # Game tick when the player left game
 
         # Internet related
-        self.received_game_ticks = np.zeros(8, dtype=int)  # Current game ticks of player. 0x6B91F8
+        self.received_game_ticks = np.zeros(8, dtype=np.int32)  # Current game ticks of player. 0x6B91F8
         self.potential_laggers = np.array([])  # The players having the lowest current game ticks
-        self.total_freeze_seconds = np.zeros(8, dtype=float)  # Cumulative Network-Induced Freeze Duration per Player (seconds)
+        self.total_freeze_seconds = np.zeros(8, dtype=np.int32)  # Cumulative Network-Induced Freeze Duration per Player (seconds)
 
         ############################
         # Developing
