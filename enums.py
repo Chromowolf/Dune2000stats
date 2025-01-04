@@ -47,3 +47,15 @@ game_end_state_dict = {
     GES_DRAWGAME: "Draw game",
     GES_UNKNOWNENDSTATE: "Unknown end state",
 }
+
+color_idx_to_hex_string = {
+    0: '#0000FF',
+    1: '#FF0000',
+    2: '#008080',
+    3: "#800080",
+    4: "#808080",
+    5: "#A52A2A",
+    6: "#FFD700",
+    7: "#F4A460"
+}
+

@@ -352,6 +352,9 @@ class GameVariable:
         self.harvester_count_list.append(self.harvester_count)
         self.credits_list.append(self.spice + self.cash)
 
+        self.units_count_list.append(self.units_count)
+        self.building_groups_count_list.append(self.building_groups_count)
+
     def clear(self):
         self._initialize_attributes()
 

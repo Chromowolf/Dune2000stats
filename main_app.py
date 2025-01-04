@@ -168,15 +168,15 @@ def exec_in_game():
 
             cur_pl_offset = PLAYER_DATA_LENGTH * p
             gv.barracks_owning[p] = global_handle.read_simple_data(
-                BUILDINGS_OWNING_TABLE + cur_pl_offset + 1 + BARRACKS_BUILDING_GROUP_INDEX,
+                BUILDING_GROUPS_COUNT + cur_pl_offset + BARRACKS_BUILDING_GROUP_INDEX,
                 ctypes.c_uint8()
             )
             gv.lightfac_owning[p] = global_handle.read_simple_data(
-                BUILDINGS_OWNING_TABLE + cur_pl_offset + 1 + LIGHT_FACTORY_BUILDING_GROUP_INDEX,
+                BUILDING_GROUPS_COUNT + cur_pl_offset + LIGHT_FACTORY_BUILDING_GROUP_INDEX,
                 ctypes.c_uint8()
             )
             gv.heavyfac_owning[p] = global_handle.read_simple_data(
-                BUILDINGS_OWNING_TABLE + cur_pl_offset + 1 + HEAVY_FACTORY_BUILDING_GROUP_INDEX,
+                BUILDING_GROUPS_COUNT + cur_pl_offset + HEAVY_FACTORY_BUILDING_GROUP_INDEX,
                 ctypes.c_uint8()
             )
             if gv.barracks_owning[p] >= 3:
@@ -318,6 +318,8 @@ def on_game_start():
     Run once on game start, initialized game variables
     """
     import_button.config(state=tk.DISABLED)
+    right_button_instance.disable_all_buttons()
+
     gv.clear()  # reset to default values
     gv.spawner_active = global_handle.read_simple_data(mem.SpawnerActive_ADDR, ctypes.c_bool())
     if gv.spawner_active:
@@ -342,7 +344,7 @@ def on_game_start():
     gv.my_offset = gv.me * 0x26990
     gv.game_start_timestamp = datetime.now()
     gv.game_start_timestamp_utc = datetime.now(timezone.utc)
-    print("=" * 40)
+    print("=" * 20)  # Delimiter to separate possible load saved game
     print(f"[{gv.game_start_timestamp.strftime('%Y-%m-%d %H:%M:%S')}]: New game detected! Game ticks: {gv.gGameTicks}")
     print(f"[Debug] SpawnerActive = {global_handle.read_simple_data(mem.SpawnerActive_ADDR, ctypes.c_bool())}")
     # print(f"{gv.map_width=}, {gv.map_height=}, {gv.game_width=}, {gv.game_height=}")
@@ -527,6 +529,7 @@ def on_game_end():
     # Dump data to pickle:
     dump_game_data(gv)
     import_button.config(state=tk.NORMAL)
+    right_button_instance.enable_all_buttons()
 
     # # Dump data to tables
     # if gv.number_of_player > 1:
@@ -778,7 +781,7 @@ if __name__ == "__main__":
     ###############
     # Right buttons
     ###############
-    RightButtons(right_button_frame)
+    right_button_instance = RightButtons(root, right_button_frame)
 
     n = 0  # Number of seconds passed when searching for d2k process
     monitor_process()

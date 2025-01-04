@@ -1,29 +1,35 @@
 import tkinter as tk
 from tkinter import ttk
-
-def plot_credits():
-    ...
-
-def plot_harvesters():
-    ...
-
-def plot_units_owned():
-    ...
+from plot_graphs import *
 
 class RightButtons:
-    def __init__(self, root):
-        self.root: ttk.Frame = root
-        display_graph_label = ttk.Label(self.root, text="Show Graphs", style="yahei20.TLabel")
-        display_graph_label.pack(side=tk.LEFT, padx=5, pady=5)
+    def __init__(self, root, master):
+        self.root = root
+        self.master: ttk.Frame = master
+        self.button_list = []
+
+        self.display_graph_label = ttk.Label(self.master, text="Show Graphs", style="yahei20.TLabel")
+        self.display_graph_label.pack(side=tk.LEFT, padx=5, pady=5)
 
         # Refresh button
-        plot_credits_button = ttk.Button(self.root, text="Credits", command=plot_credits)
-        plot_credits_button.pack(side=tk.LEFT, padx=5, pady=5)
+        self.plot_credits_button = ttk.Button(self.master, text="Credits", command=lambda: plot_credits(self.root))
+        self.plot_credits_button.pack(side=tk.LEFT, padx=5, pady=5)
+        self.button_list.append(self.plot_credits_button)
 
         # Import button
-        plot_harvesters_button = ttk.Button(self.root, text="Harvesters", command=plot_harvesters)
-        plot_harvesters_button.pack(side=tk.LEFT, padx=5, pady=5)
+        self.plot_harvesters_button = ttk.Button(self.master, text="Harvesters", command=lambda: plot_harvesters(self.root))
+        self.plot_harvesters_button.pack(side=tk.LEFT, padx=5, pady=5)
+        self.button_list.append(self.plot_harvesters_button)
 
         # Export button
-        plot_units_owned_button = ttk.Button(self.root, text="Units Owned", command=plot_units_owned)
-        plot_units_owned_button.pack(side=tk.LEFT, padx=5, pady=5)
+        self.plot_units_owned_button = ttk.Button(self.master, text="Units Owned", command=lambda: plot_units_owned(self.root))
+        self.plot_units_owned_button.pack(side=tk.LEFT, padx=5, pady=5)
+        self.button_list.append(self.plot_units_owned_button)
+
+    def enable_all_buttons(self):
+        for bt in self.button_list:
+            bt.config(state=tk.NORMAL)
+
+    def disable_all_buttons(self):
+        for bt in self.button_list:
+            bt.config(state=tk.DISABLED)
