@@ -23,6 +23,10 @@ def update_buildings_owned():
         gv.buildings_owned[:, HARKONNEN_REFINERY_INDEX] + \
         gv.buildings_owned[:, ORDOS_REFINERY_INDEX]  # dim (8, )
 
+    # Current existing
+    gv.building_groups_count = np.stack([
+        read_array(BUILDING_GROUPS_COUNT + PLAYER_DATA_LENGTH * i, ctypes.c_uint8, NUM_BUILDING_GROUPS) for i in range(8)
+    ])
 
 def update_units_owned():
     """
@@ -32,12 +36,19 @@ def update_units_owned():
     # for i in range(8):
     #     # 30 types of units
     #     gv.units_owned[i] = read_array(UNITS_OWNED_TABLE + PLAYER_DATA_LENGTH * i, ctypes.c_uint32, NUM_UNITS)
+
+    # Overall units owned
     if not gv.spawner_active:  # Temporarily do not consider mission launcher
         gv.units_owned = np.stack([
             read_array(UNITS_OWNED_TABLE + PLAYER_DATA_LENGTH * i, ctypes.c_uint32, NUM_UNITS) for i in range(8)
         ])
     else:
         gv.units_owned = read_u32_table(mem.UNITS_OWNED_TABLE_CNC, (8, NUM_UNITS))
+
+    # Current existing
+    gv.units_count = np.stack([
+        read_array(UNITS_EXIST_PER_TYPE + PLAYER_DATA_LENGTH * i, ctypes.c_int32, NUM_UNITS) for i in range(8)
+    ])
 
 def update_production():
     """
@@ -233,7 +244,7 @@ def update_production():
 
 def update_efficiencies():
     """
-    No need to run every loop. Just need to be run when updating the stats table.
+    No need to run every loop? Just need to be run when updating the stats table.
     This function will clear the 3 unit increment buffers:
         units_increment_buffer_production, units_increment_buffer_harvs_from_ref, units_increment_buffer_starport,
     and append to the delicated list

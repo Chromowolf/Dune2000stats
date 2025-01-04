@@ -138,9 +138,13 @@ class GameVariable:
         self.unit_build_time_ticks_handicap1 = np.zeros(NUM_UNITS, dtype=int)  # initialized once
 
         self.buildings_owned = np.zeros((8, NUM_BUILDINGS), dtype=int)  # 8 players, 62 types of buildings
+        self.building_groups_count = np.zeros((8, NUM_BUILDING_GROUPS), dtype=np.uint8)  # 8 players, 24 building groups. Buildings currently owned. Used for plotting
+
         self.units_owned = np.zeros((8, NUM_UNITS), dtype=int)  # 8 players, 30 types of units
         self.units_owned_at_start = np.zeros((8, NUM_UNITS), dtype=int)  # initialized once when game tick > 0
         self.starting_units_excluding_mvc = np.zeros((8, NUM_UNITS), dtype=int)  # initialized once when game tick > 0, together with units_owned_at_start, used to calculate cncnet effi
+
+        self.units_count = np.zeros((8, NUM_UNITS), dtype=np.int32)  # 8 players, 30 types of units. Units currently owned. Used for plotting
 
         self.units_lost = np.zeros((8, NUM_UNITS), dtype=int)  # 8 players, 62 types of buildings
         self.units_killed_detail = np.zeros((8, NUM_UNITS, 8), dtype=int)  # 8 players, 30 types of units, 8 p
@@ -242,6 +246,9 @@ class GameVariable:
 
         self.harvester_count_list = []  # list of current harvesters owned
         self.credits_list = []  # list of credits
+
+        self.units_count_list = []  # list of currentlu owned units, (8, NUM_UNITS)
+        self.building_groups_count_list = []  # list of currentlu owned building groups, (8, NUM_BUILDING_GROUPS)
 
         # Delicated production weighted sums, list of np.array of length 8, each element being the weighted sum of production time
         # self.total_prod_gameticks_delicated_excl_starport_list = []  # appended every second, with backward increment, in handicap 1
