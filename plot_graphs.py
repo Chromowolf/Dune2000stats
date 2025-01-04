@@ -5,6 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 from enums import color_idx_to_hex_string
+from gamedata.unitsdata import HARVESTER_INDEX
 
 def create_ts_plot_at_frame(frame, x, y, stacked=False, proportion=False, colors=None, legend_labels=None):
     """
@@ -21,7 +22,7 @@ def create_ts_plot_at_frame(frame, x, y, stacked=False, proportion=False, colors
     Returns: Figure object
     """
     fig = plt.Figure(figsize=(6, 4), dpi=100)
-    ax = fig.add_subplot(111)
+    ax = fig.add_subplot(111)  # 1x1 grid, and this is the first (and only) subplot.
     n_line = y.shape[0]
 
     # if not colors:
@@ -33,15 +34,17 @@ def create_ts_plot_at_frame(frame, x, y, stacked=False, proportion=False, colors
         # stacked = True
         row_sums = y.sum(axis=0)  # Sum across col
         proportions = np.divide(y, row_sums, where=(row_sums != 0),
-                                out=np.full_like(y, 1 / n_line, dtype=float))
+                                out=np.full_like(y, 0, dtype=float))
         ax.stackplot(x, proportions, colors=colors, labels=legend_labels)  # Stack plot of proportion
         ax.legend(loc='upper left')
         ax.set_xlabel("Time")
         ax.set_ylabel("Proportion")
+        ax.set_ylim(top=1)
         ax.set_title("Time Series Plot (Proportion)")
     else:
         if stacked:
-            ax.stackplot(x, y, baseline='wiggle', colors=colors, labels=legend_labels)  # Stack plot of proportion
+            # ax.stackplot(x, y, baseline='wiggle', colors=colors, labels=legend_labels)  # Stack plot of proportion
+            ax.stackplot(x, y, colors=colors, labels=legend_labels)  # Stack plot of proportion
             ax.legend(loc='upper left')
             ax.set_xlabel("Time")
             ax.set_ylabel("Number")
@@ -51,10 +54,14 @@ def create_ts_plot_at_frame(frame, x, y, stacked=False, proportion=False, colors
             # ax.legend([f"Series{i}" for i in range(n_line)], loc='upper left')
             for i in range(n_line):
                 ax.plot(x, y[i, :], color=colors[i] if colors else None, label=legend_labels[i])
-            ax.legend(loc='upper right')
+            ax.legend(loc='upper left')
             ax.set_xlabel("Time")
             ax.set_ylabel("Number")
-            ax.set_title("Time Series Plot (Normal)")
+            ax.set_title("Time Series Plot (Line)")
+
+    ax.grid(True)
+    ax.set_xlim(left=0)
+    ax.set_ylim(bottom=0)
 
     canvas = FigureCanvasTkAgg(fig, master=frame)
     canvas.draw()
@@ -66,44 +73,86 @@ def create_ts_plot_at_frame(frame, x, y, stacked=False, proportion=False, colors
     canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
 
-def plot_credits(root):
+def plot_economy(root):
     plot_window = tk.Toplevel(root)
-    plot_window.title("Credits Plot")
-    plot_window.geometry("960x720")
+    plot_window.title("Economy Plots")
+    plot_window.geometry("1280x720")
 
-    if not hasattr(gv, "credits_list"):
-        not_found_label = ttk.LabelFrame(plot_window, text="No credits data found!", style="yahei10.TLabelframe")
-        not_found_label.pack(fill=tk.BOTH, expand=True)
+    if not hasattr(gv, "game_ticks_list") or not gv.game_ticks_list:
+        ttk.Label(plot_window, text="No game data!", style="yahei20.TLabel").pack()
         return
 
     # Create a Notebook (tabs)
     notebook = ttk.Notebook(plot_window)
     notebook.pack(expand=True, fill="both")
 
-    # Efficiently convert to a 2D NumPy array
-    data_2d = np.stack(gv.credits_list, axis=1)[:gv.number_of_player, :]  # Stack arrays vertically
-
     # colors:
     colors = [color_idx_to_hex_string.get(c, "#000000") for c in gv.player_colors[:gv.number_of_player]]
     labels = gv.player_names
 
-    # --- Create the first tab (Normal) ---
-    frame_normal = ttk.LabelFrame(notebook)
-    notebook.add(frame_normal, text="Normal")
-    create_ts_plot_at_frame(frame_normal, gv.game_ticks_list, data_2d, stacked=False, proportion=False, colors=colors, legend_labels=labels)
+    #############
+    # Credits
+    #############
+    credits_frame_line = ttk.LabelFrame(notebook)
+    notebook.add(credits_frame_line, text="Credits (Line)")
+    credits_frame_stacked = ttk.Frame(notebook)
+    notebook.add(credits_frame_stacked, text="Credits (Stacked)")
+    credits_frame_proportion = ttk.Frame(notebook)
+    notebook.add(credits_frame_proportion, text="Credits (Proportion)")
 
-    # --- Create the 2nd tab (Normal stacked) ---
-    frame_stacked = ttk.Frame(notebook)
-    notebook.add(frame_stacked, text="Normal Stacked")
-    create_ts_plot_at_frame(frame_stacked, gv.game_ticks_list, data_2d, stacked=True, proportion=False, colors=colors, legend_labels=labels)
+    if not hasattr(gv, "credits_list"):
+        ttk.Label(credits_frame_line, text="No credits data found!", style="yahei20.TLabel").pack()
+        ttk.Label(credits_frame_stacked, text="No credits data found!", style="yahei20.TLabel").pack()
+        ttk.Label(credits_frame_proportion, text="No credits data found!", style="yahei20.TLabel").pack()
+    else:
+        credit_data_2d = np.stack(gv.credits_list, axis=1)[:gv.number_of_player, :]  # Stack arrays vertically
+        # --- Create the first tab (Normal) ---
+        create_ts_plot_at_frame(credits_frame_line, gv.game_ticks_list, credit_data_2d, stacked=False, proportion=False, colors=colors, legend_labels=labels)
 
-    # --- Create the 3rd tab (Proportion Plot) ---
-    frame_proportion = ttk.Frame(notebook)
-    notebook.add(frame_proportion, text="Proportion")
-    create_ts_plot_at_frame(frame_proportion, gv.game_ticks_list, data_2d, stacked=True, proportion=True, colors=colors, legend_labels=labels)
+        # --- Create the 2nd tab (Normal stacked) ---
+        create_ts_plot_at_frame(credits_frame_stacked, gv.game_ticks_list, credit_data_2d, stacked=True, proportion=False, colors=colors, legend_labels=labels)
+
+        # --- Create the 3rd tab (Proportion Plot) ---
+        create_ts_plot_at_frame(credits_frame_proportion, gv.game_ticks_list, credit_data_2d, stacked=True, proportion=True, colors=colors, legend_labels=labels)
+
+    #############
+    # Harvesters
+    #############
+    harv_frame_line = ttk.LabelFrame(notebook)
+    notebook.add(harv_frame_line, text="Harvester Count (Line)")
+    harv_frame_stacked = ttk.Frame(notebook)
+    notebook.add(harv_frame_stacked, text="Harvester Count (Stacked)")
+    harv_frame_proportion = ttk.Frame(notebook)
+    notebook.add(harv_frame_proportion, text="Harvester Count (Proportion)")
+
+    if not hasattr(gv, "units_count_list"):
+        ttk.Label(harv_frame_line, text="No harvesters data found!", style="yahei20.TLabel").pack()
+        ttk.Label(harv_frame_stacked, text="No harvesters data found!", style="yahei20.TLabel").pack()
+        ttk.Label(harv_frame_proportion, text="No harvesters data found!", style="yahei20.TLabel").pack()
+    else:
+        harv_data_list = [units_data[:, HARVESTER_INDEX] for units_data in gv.units_count_list]
+        harv_data_2d = np.stack(harv_data_list, axis=1)[:gv.number_of_player, :]  # Stack arrays vertically
+        # --- Create the first tab (Normal) ---
+        create_ts_plot_at_frame(harv_frame_line, gv.game_ticks_list, harv_data_2d, stacked=False, proportion=False, colors=colors, legend_labels=labels)
+
+        # --- Create the 2nd tab (Normal stacked) ---
+        create_ts_plot_at_frame(harv_frame_stacked, gv.game_ticks_list, harv_data_2d, stacked=True, proportion=False, colors=colors, legend_labels=labels)
+
+        # --- Create the 3rd tab (Proportion Plot) ---
+        create_ts_plot_at_frame(harv_frame_proportion, gv.game_ticks_list, harv_data_2d, stacked=True, proportion=True, colors=colors, legend_labels=labels)
 
 def plot_harvesters(root):
-    ...
+    plot_window = tk.Toplevel(root)
+    plot_window.title("Units Plot")
+    plot_window.geometry("1280x720")
+    if not hasattr(gv, "game_ticks_list") or not gv.game_ticks_list:
+        ttk.Label(plot_window, text="No game data!", style="yahei20.TLabel").pack()
+        return
 
 def plot_units_owned(root):
-    ...
+    plot_window = tk.Toplevel(root)
+    plot_window.title("Buildings Plot")
+    plot_window.geometry("1280x720")
+    if not hasattr(gv, "game_ticks_list") or not gv.game_ticks_list:
+        ttk.Label(plot_window, text="No game data!", style="yahei20.TLabel").pack()
+        return

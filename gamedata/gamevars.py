@@ -349,11 +349,11 @@ class GameVariable:
         self.weighted_sum_gameticks_excluding_ref_handicap1_list.append(self.weighted_sum_gameticks_excluding_ref_handicap1[:self.number_of_player])
         self.weighted_sum_gameticks_including_ref_handicap1_list.append(self.weighted_sum_gameticks_including_ref_handicap1[:self.number_of_player])
 
-        self.harvester_count_list.append(self.harvester_count)
+        # self.harvester_count_list.append(self.harvester_count.copy())  # Must append a copy, because harvester_count is modified in-place
         self.credits_list.append(self.spice + self.cash)
 
-        self.units_count_list.append(self.units_count)
-        self.building_groups_count_list.append(self.building_groups_count)
+        self.units_count_list.append(self.units_count.copy())
+        self.building_groups_count_list.append(self.building_groups_count.copy())
 
     def clear(self):
         self._initialize_attributes()
