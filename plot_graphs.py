@@ -11,7 +11,11 @@ from gamedata.unitsdata import (
     CARRYALL2_INDEX,
     CHOAM_FRIGATE_INDEX,
     HARVESTER_INDEX,
-    NUM_UNITS
+    NUM_UNITS,
+    CONSTRUCTION_YARD_BUILDING_GROUP_INDEX,
+    BARRACKS_BUILDING_GROUP_INDEX,
+    LIGHT_FACTORY_BUILDING_GROUP_INDEX,
+    HEAVY_FACTORY_BUILDING_GROUP_INDEX,
 )
 
 def create_ts_plot_at_frame(frame, x, y, stacked=False, proportion=False, colors=None, legend_labels=None):
@@ -263,13 +267,30 @@ def plot_buildings(root):
     buildings_value_frame_proportion = ttk.Frame(notebook)
     notebook.add(buildings_value_frame_proportion, text="Buildings Value (Proportion)")
 
+    construction_yard_count_frame = ttk.Frame(notebook)
+    notebook.add(construction_yard_count_frame, text="Contruction Yard")
+
+    barracks_count_frame = ttk.Frame(notebook)
+    notebook.add(barracks_count_frame, text="Barracks")
+
+    light_factory_count_frame = ttk.Frame(notebook)
+    notebook.add(light_factory_count_frame, text="Light Factory")
+
+    heavy_factory_count_frame = ttk.Frame(notebook)
+    notebook.add(heavy_factory_count_frame, text="Heavy Factory")
+
     if not hasattr(gv, "building_groups_count_list") or not gv.building_groups_count_list:
-        ttk.Label(buildings_count_frame_line, text="No units data found!", style="yahei20.TLabel").pack()
-        ttk.Label(buildings_count_frame_stacked, text="No units data found!", style="yahei20.TLabel").pack()
-        ttk.Label(buildings_count_frame_proportion, text="No units data found!", style="yahei20.TLabel").pack()
-        ttk.Label(buildings_value_frame_line, text="No units data found!", style="yahei20.TLabel").pack()
-        ttk.Label(buildings_value_frame_stacked, text="No units data found!", style="yahei20.TLabel").pack()
-        ttk.Label(buildings_value_frame_proportion, text="No units data found!", style="yahei20.TLabel").pack()
+        ttk.Label(buildings_count_frame_line, text="No buildings data found!", style="yahei20.TLabel").pack()
+        ttk.Label(buildings_count_frame_stacked, text="No buildings data found!", style="yahei20.TLabel").pack()
+        ttk.Label(buildings_count_frame_proportion, text="No buildings data found!", style="yahei20.TLabel").pack()
+        ttk.Label(buildings_value_frame_line, text="No buildings data found!", style="yahei20.TLabel").pack()
+        ttk.Label(buildings_value_frame_stacked, text="No buildings data found!", style="yahei20.TLabel").pack()
+        ttk.Label(buildings_value_frame_proportion, text="No buildings data found!", style="yahei20.TLabel").pack()
+
+        ttk.Label(construction_yard_count_frame, text="No buildings data found!", style="yahei20.TLabel").pack()
+        ttk.Label(barracks_count_frame, text="No buildings data found!", style="yahei20.TLabel").pack()
+        ttk.Label(light_factory_count_frame, text="No buildings data found!", style="yahei20.TLabel").pack()
+        ttk.Label(heavy_factory_count_frame, text="No buildings data found!", style="yahei20.TLabel").pack()
     else:
         buildings_data_3d = np.stack(gv.building_groups_count_list, axis=1)  # get (8, n, NUM_BUILDING_GROUPS)
 
@@ -314,3 +335,25 @@ def plot_buildings(root):
         # --- Create the 3rd tab (Proportion Plot) ---
         create_ts_plot_at_frame(buildings_value_frame_proportion, gv.game_ticks_list, buildings_values_2d, stacked=True,
                                 proportion=True, colors=colors, legend_labels=labels)
+
+        # Factories counts
+        cy_count_data = buildings_data_3d[:gv.number_of_player, :, CONSTRUCTION_YARD_BUILDING_GROUP_INDEX]
+        barracks_count_data = buildings_data_3d[:gv.number_of_player, :, BARRACKS_BUILDING_GROUP_INDEX]
+        light_fac_count_data = buildings_data_3d[:gv.number_of_player, :, LIGHT_FACTORY_BUILDING_GROUP_INDEX]
+        heavy_fac_count_data = buildings_data_3d[:gv.number_of_player, :, HEAVY_FACTORY_BUILDING_GROUP_INDEX]
+
+        create_ts_plot_at_frame(construction_yard_count_frame, gv.game_ticks_list, cy_count_data, stacked=False,
+                                proportion=False,
+                                colors=colors, legend_labels=labels)
+
+        create_ts_plot_at_frame(barracks_count_frame, gv.game_ticks_list, barracks_count_data, stacked=False,
+                                proportion=False,
+                                colors=colors, legend_labels=labels)
+
+        create_ts_plot_at_frame(light_factory_count_frame, gv.game_ticks_list, light_fac_count_data, stacked=False,
+                                proportion=False,
+                                colors=colors, legend_labels=labels)
+
+        create_ts_plot_at_frame(heavy_factory_count_frame, gv.game_ticks_list, heavy_fac_count_data, stacked=False,
+                                proportion=False,
+                                colors=colors, legend_labels=labels)
