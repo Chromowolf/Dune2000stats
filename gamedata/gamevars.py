@@ -332,7 +332,7 @@ class GameVariable:
         # Internet related
         self.received_game_ticks = np.zeros(8, dtype=np.int32)  # Current game ticks of player. 0x6B91F8
         self.potential_laggers = np.array([])  # The players having the lowest current game ticks
-        self.total_freeze_seconds = np.zeros(8, dtype=np.int32)  # Cumulative Network-Induced Freeze Duration per Player (seconds)
+        self.total_freeze_seconds = np.zeros(8, dtype=float)  # Cumulative Network-Induced Freeze Duration per Player (seconds)
 
         ############################
         # Developing
