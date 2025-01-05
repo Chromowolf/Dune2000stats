@@ -111,6 +111,16 @@ class PandasTableApp:
     def set_cells_color(self):
         if gv.number_of_player < 2:  # Game failed to start
             return
+        if 'Handicap' in self.summary_df.index:
+            handicap_row_index = self.summary_df.index.get_loc("Handicap")
+
+            # Highlight handicap2 in light red
+            handicap2_players = list(np.where(gv.player_handicaps[:gv.number_of_player] == 1)[0])  # must convert to list
+            self.table.setRowColors(rows=[handicap_row_index], clr="#FFCCCC", cols=handicap2_players)
+            # Highlight handicap3 in light purple
+            handicap3_players = list(np.where(gv.player_handicaps[:gv.number_of_player] > 1)[0])  # must convert to list
+            self.table.setRowColors(rows=[handicap_row_index], clr="#E5CCFF", cols=handicap3_players)
+
         if 'Colour' in self.summary_df.index:
             color_row_index = self.summary_df.index.get_loc("Colour")
             for p in range(gv.number_of_player):
