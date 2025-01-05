@@ -19,7 +19,7 @@ from gamedata.unitsdata import (
 )
 
 
-def create_ts_plot_at_frame(frame, x, y, stacked=False, proportion=False, colors=None, legend_labels=None):
+def create_ts_plot_at_frame(frame, x, y, stacked=False, proportion=False, colors=None, legend_labels=None, **kwargs):
     """
     If proportion is True, then stacked is automatically true
     Args:
@@ -72,8 +72,8 @@ def create_ts_plot_at_frame(frame, x, y, stacked=False, proportion=False, colors
             ax.set_title("Time Series Plot (Line)")
 
     ax.grid(True)
-    ax.set_xlim(left=0)
-    ax.set_ylim(bottom=0)
+    ax.set_xlim(left=kwargs.get('xlim_left', 0), right=kwargs.get('xlim_right'))
+    ax.set_ylim(bottom=kwargs.get('ylim_bottom', 0), top=kwargs.get('ylim_top'))
 
     canvas = FigureCanvasTkAgg(fig, master=frame)
     canvas.draw()
@@ -380,16 +380,16 @@ def plot_buildings(root):
 
         create_ts_plot_at_frame(construction_yard_count_frame, gv.game_ticks_list, cy_count_data, stacked=False,
                                 proportion=False,
-                                colors=colors, legend_labels=labels)
+                                colors=colors, legend_labels=labels, ylim_top=10)
 
         create_ts_plot_at_frame(barracks_count_frame, gv.game_ticks_list, barracks_count_data, stacked=False,
                                 proportion=False,
-                                colors=colors, legend_labels=labels)
+                                colors=colors, legend_labels=labels, ylim_top=10)
 
         create_ts_plot_at_frame(light_factory_count_frame, gv.game_ticks_list, light_fac_count_data, stacked=False,
                                 proportion=False,
-                                colors=colors, legend_labels=labels)
+                                colors=colors, legend_labels=labels, ylim_top=10)
 
         create_ts_plot_at_frame(heavy_factory_count_frame, gv.game_ticks_list, heavy_fac_count_data, stacked=False,
                                 proportion=False,
-                                colors=colors, legend_labels=labels)
+                                colors=colors, legend_labels=labels, ylim_top=10)
