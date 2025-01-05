@@ -1,3 +1,4 @@
+from gamedata import NUM_BUILDING_GROUPS
 from gamedata.gamevars import game_vars as gv
 import tkinter as tk
 from tkinter import ttk
@@ -191,8 +192,9 @@ def plot_units_owned(root):
         ttk.Label(units_value_frame_proportion, text="No units data found!", style="yahei20.TLabel").pack()
     else:
         units_data_3d = np.stack(gv.units_count_list, axis=1)  # get (8, n, NUM_UNITS)
-        unit_cost_arr = gv.unit_cost_handicap1.copy()  # shape (NUM_UNITS, )
-        unit_ones = np.ones(NUM_UNITS, dtype=np.int32)
+
+        unit_cost_arr = gv.unit_cost_handicap1.astype(np.int64)  # shape (NUM_UNITS, ). astype auto creates a copy
+        unit_ones = np.ones(NUM_UNITS, dtype=np.int64)
         unit_cost_arr[[CARRYALL_INDEX, CARRYALL2_INDEX, CHOAM_FRIGATE_INDEX]] = 0  # setting irrelevent units to 0
         unit_ones[[CARRYALL_INDEX, CARRYALL2_INDEX, CHOAM_FRIGATE_INDEX]] = 0  # setting irrelevent units to 0
 
@@ -234,3 +236,81 @@ def plot_buildings(root):
     if not hasattr(gv, "game_ticks_list") or not gv.game_ticks_list:
         ttk.Label(plot_window, text="No game data!", style="yahei20.TLabel").pack()
         return
+
+    # Create a Notebook (tabs)
+    notebook = ttk.Notebook(plot_window)
+    notebook.pack(expand=True, fill="both")
+
+    # colors:
+    colors = [color_idx_to_hex_string.get(c, "#000000") for c in gv.player_colors[:gv.number_of_player]]
+    labels = gv.player_names
+
+    buildings_count_frame_line = ttk.Frame(notebook)
+    notebook.add(buildings_count_frame_line, text="Buildings Count (Line)")
+
+    buildings_count_frame_stacked = ttk.Frame(notebook)
+    notebook.add(buildings_count_frame_stacked, text="Buildings Count (Stacked)")
+
+    buildings_count_frame_proportion = ttk.Frame(notebook)
+    notebook.add(buildings_count_frame_proportion, text="Buildings Count (Proportion)")
+
+    buildings_value_frame_line = ttk.Frame(notebook)
+    notebook.add(buildings_value_frame_line, text="Buildings Value (Line)")
+
+    buildings_value_frame_stacked = ttk.Frame(notebook)
+    notebook.add(buildings_value_frame_stacked, text="Buildings Value (Stacked)")
+
+    buildings_value_frame_proportion = ttk.Frame(notebook)
+    notebook.add(buildings_value_frame_proportion, text="Buildings Value (Proportion)")
+
+    if not hasattr(gv, "building_groups_count_list") or not gv.building_groups_count_list:
+        ttk.Label(buildings_count_frame_line, text="No units data found!", style="yahei20.TLabel").pack()
+        ttk.Label(buildings_count_frame_stacked, text="No units data found!", style="yahei20.TLabel").pack()
+        ttk.Label(buildings_count_frame_proportion, text="No units data found!", style="yahei20.TLabel").pack()
+        ttk.Label(buildings_value_frame_line, text="No units data found!", style="yahei20.TLabel").pack()
+        ttk.Label(buildings_value_frame_stacked, text="No units data found!", style="yahei20.TLabel").pack()
+        ttk.Label(buildings_value_frame_proportion, text="No units data found!", style="yahei20.TLabel").pack()
+    else:
+        buildings_data_3d = np.stack(gv.building_groups_count_list, axis=1)  # get (8, n, NUM_BUILDING_GROUPS)
+
+        building_cost_arr = gv.building_cost_handicap1.astype(np.int64)  # shape (NUM_BUILDINGs, ). astype auto creates a copy
+        building_group_avg_cost = np.array(
+            [
+                np.sum(building_cost_arr[gv.building_group_index == i]) // np.sum(gv.building_group_index == i)
+                if np.sum(gv.building_group_index == i) > 0 else 0
+                for i in range(NUM_BUILDING_GROUPS)
+            ],
+            dtype=np.int64
+        )  # shape (NUM_BUILDING_GROUPS, ). Calculate the average cost within each building group
+
+        building_ones = np.ones(NUM_BUILDING_GROUPS, dtype=np.int64)
+
+        buildings_counts_2d_8p = buildings_data_3d @ building_ones  # (8, n)
+        buildings_counts_2d = buildings_counts_2d_8p[:gv.number_of_player, :]
+
+        buildings_values_2d_8p = buildings_data_3d @ building_group_avg_cost  # (8, n)
+        buildings_values_2d = buildings_values_2d_8p[:gv.number_of_player, :]
+
+        # --- Create the first tab (Normal) ---
+        create_ts_plot_at_frame(buildings_count_frame_line, gv.game_ticks_list, buildings_counts_2d, stacked=False, proportion=False,
+                                colors=colors, legend_labels=labels)
+
+        # --- Create the 2nd tab (Normal stacked) ---
+        create_ts_plot_at_frame(buildings_count_frame_stacked, gv.game_ticks_list, buildings_counts_2d, stacked=True,
+                                proportion=False, colors=colors, legend_labels=labels)
+
+        # --- Create the 3rd tab (Proportion Plot) ---
+        create_ts_plot_at_frame(buildings_count_frame_proportion, gv.game_ticks_list, buildings_counts_2d, stacked=True,
+                                proportion=True, colors=colors, legend_labels=labels)
+
+        # --- Create the first tab (Normal) ---
+        create_ts_plot_at_frame(buildings_value_frame_line, gv.game_ticks_list, buildings_values_2d, stacked=False, proportion=False,
+                                colors=colors, legend_labels=labels)
+
+        # --- Create the 2nd tab (Normal stacked) ---
+        create_ts_plot_at_frame(buildings_value_frame_stacked, gv.game_ticks_list, buildings_values_2d, stacked=True,
+                                proportion=False, colors=colors, legend_labels=labels)
+
+        # --- Create the 3rd tab (Proportion Plot) ---
+        create_ts_plot_at_frame(buildings_value_frame_proportion, gv.game_ticks_list, buildings_values_2d, stacked=True,
+                                proportion=True, colors=colors, legend_labels=labels)
