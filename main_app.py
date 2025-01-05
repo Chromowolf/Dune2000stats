@@ -467,6 +467,10 @@ def on_game_start():
             UNITS_PROPERTY_DATA + 256 * unit_index + 0x20,
             ctypes.c_int32()
         )
+        gv.unit_group_index[unit_index] = global_handle.read_simple_data(
+            UNITS_PROPERTY_DATA + 256 * unit_index + 0x01,
+            ctypes.c_uint8()
+        )
     gv.unit_progress_per_tick = np.maximum(np.outer(gv.max_boost, gv.unit_build_speed) // 100, 1)  # dim: (8, 30)
     gv.unit_build_time_ticks_actual = 23040 // gv.unit_progress_per_tick  # dim: (8, 30)
 
@@ -484,6 +488,10 @@ def on_game_start():
         gv.building_build_speed[building_index] = global_handle.read_simple_data(
             BUILDINGS_PROPERTY_DATA + 268 * building_index + 0x2C,
             ctypes.c_int32()
+        )
+        gv.building_group_index[building_index] = global_handle.read_simple_data(
+            BUILDINGS_PROPERTY_DATA + 268 * building_index + 0x88,
+            ctypes.c_uint8()
         )
     gv.building_progress_per_tick = np.maximum(
         np.outer(gv.max_boost, gv.building_build_speed) // 100,
