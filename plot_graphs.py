@@ -18,6 +18,7 @@ from gamedata.unitsdata import (
     HEAVY_FACTORY_BUILDING_GROUP_INDEX,
 )
 
+
 def create_ts_plot_at_frame(frame, x, y, stacked=False, proportion=False, colors=None, legend_labels=None):
     """
     If proportion is True, then stacked is automatically true
@@ -96,10 +97,18 @@ def plot_economy(root):
     # Create a Notebook (tabs)
     notebook = ttk.Notebook(plot_window)
     notebook.pack(expand=True, fill="both")
+    is_real_player = gv.is_player & (~gv.is_spectator)  # shape (8, ), bool
 
     # colors:
-    colors = [color_idx_to_hex_string.get(c, "#000000") for c in gv.player_colors[:gv.number_of_player]]
-    labels = gv.player_names
+    colors = [color_idx_to_hex_string.get(c, "#000000")
+              for i, c in enumerate(gv.player_colors)
+              if is_real_player[i]
+              ]
+    labels = [
+        nm
+        for i, nm in enumerate(gv.player_names)
+        if is_real_player[i]
+    ]
 
     #############
     # Credits
@@ -116,15 +125,18 @@ def plot_economy(root):
         ttk.Label(credits_frame_stacked, text="No credits data found!", style="yahei20.TLabel").pack()
         ttk.Label(credits_frame_proportion, text="No credits data found!", style="yahei20.TLabel").pack()
     else:
-        credit_data_2d = np.stack(gv.credits_list, axis=1)[:gv.number_of_player, :]  # Stack arrays vertically
+        credit_data_2d = np.stack(gv.credits_list, axis=1)[is_real_player, :]  # Stack arrays vertically
         # --- Create the first tab (Normal) ---
-        create_ts_plot_at_frame(credits_frame_line, gv.game_ticks_list, credit_data_2d, stacked=False, proportion=False, colors=colors, legend_labels=labels)
+        create_ts_plot_at_frame(credits_frame_line, gv.game_ticks_list, credit_data_2d, stacked=False, proportion=False,
+                                colors=colors, legend_labels=labels)
 
         # --- Create the 2nd tab (Normal stacked) ---
-        create_ts_plot_at_frame(credits_frame_stacked, gv.game_ticks_list, credit_data_2d, stacked=True, proportion=False, colors=colors, legend_labels=labels)
+        create_ts_plot_at_frame(credits_frame_stacked, gv.game_ticks_list, credit_data_2d, stacked=True,
+                                proportion=False, colors=colors, legend_labels=labels)
 
         # --- Create the 3rd tab (Proportion Plot) ---
-        create_ts_plot_at_frame(credits_frame_proportion, gv.game_ticks_list, credit_data_2d, stacked=True, proportion=True, colors=colors, legend_labels=labels)
+        create_ts_plot_at_frame(credits_frame_proportion, gv.game_ticks_list, credit_data_2d, stacked=True,
+                                proportion=True, colors=colors, legend_labels=labels)
 
     #############
     # Harvesters
@@ -142,15 +154,18 @@ def plot_economy(root):
         ttk.Label(harv_frame_proportion, text="No harvesters data found!", style="yahei20.TLabel").pack()
     else:
         harv_data_list = [units_data[:, HARVESTER_INDEX] for units_data in gv.units_count_list]
-        harv_data_2d = np.stack(harv_data_list, axis=1)[:gv.number_of_player, :]  # Stack arrays vertically
+        harv_data_2d = np.stack(harv_data_list, axis=1)[is_real_player, :]  # Stack arrays vertically
         # --- Create the first tab (Normal) ---
-        create_ts_plot_at_frame(harv_frame_line, gv.game_ticks_list, harv_data_2d, stacked=False, proportion=False, colors=colors, legend_labels=labels)
+        create_ts_plot_at_frame(harv_frame_line, gv.game_ticks_list, harv_data_2d, stacked=False, proportion=False,
+                                colors=colors, legend_labels=labels)
 
         # --- Create the 2nd tab (Normal stacked) ---
-        create_ts_plot_at_frame(harv_frame_stacked, gv.game_ticks_list, harv_data_2d, stacked=True, proportion=False, colors=colors, legend_labels=labels)
+        create_ts_plot_at_frame(harv_frame_stacked, gv.game_ticks_list, harv_data_2d, stacked=True, proportion=False,
+                                colors=colors, legend_labels=labels)
 
         # --- Create the 3rd tab (Proportion Plot) ---
-        create_ts_plot_at_frame(harv_frame_proportion, gv.game_ticks_list, harv_data_2d, stacked=True, proportion=True, colors=colors, legend_labels=labels)
+        create_ts_plot_at_frame(harv_frame_proportion, gv.game_ticks_list, harv_data_2d, stacked=True, proportion=True,
+                                colors=colors, legend_labels=labels)
 
 
 def plot_units_owned(root):
@@ -164,10 +179,18 @@ def plot_units_owned(root):
     # Create a Notebook (tabs)
     notebook = ttk.Notebook(plot_window)
     notebook.pack(expand=True, fill="both")
+    is_real_player = gv.is_player & (~gv.is_spectator)  # shape (8, ), bool
 
     # colors:
-    colors = [color_idx_to_hex_string.get(c, "#000000") for c in gv.player_colors[:gv.number_of_player]]
-    labels = gv.player_names
+    colors = [color_idx_to_hex_string.get(c, "#000000")
+              for i, c in enumerate(gv.player_colors)
+              if is_real_player[i]
+              ]
+    labels = [
+        nm
+        for i, nm in enumerate(gv.player_names)
+        if is_real_player[i]
+    ]
 
     units_count_frame_line = ttk.Frame(notebook)
     notebook.add(units_count_frame_line, text="Units Count (Line)")
@@ -203,13 +226,14 @@ def plot_units_owned(root):
         unit_ones[[CARRYALL_INDEX, CARRYALL2_INDEX, CHOAM_FRIGATE_INDEX]] = 0  # setting irrelevent units to 0
 
         unit_counts_2d_8p = units_data_3d @ unit_ones  # (8, n)
-        unit_counts_2d = unit_counts_2d_8p[:gv.number_of_player, :]
+        unit_counts_2d = unit_counts_2d_8p[is_real_player, :]
 
         unit_values_2d_8p = units_data_3d @ unit_cost_arr  # (8, n)
-        unit_values_2d = unit_values_2d_8p[:gv.number_of_player, :]
+        unit_values_2d = unit_values_2d_8p[is_real_player, :]
 
         # --- Create the first tab (Normal) ---
-        create_ts_plot_at_frame(units_count_frame_line, gv.game_ticks_list, unit_counts_2d, stacked=False, proportion=False,
+        create_ts_plot_at_frame(units_count_frame_line, gv.game_ticks_list, unit_counts_2d, stacked=False,
+                                proportion=False,
                                 colors=colors, legend_labels=labels)
 
         # --- Create the 2nd tab (Normal stacked) ---
@@ -221,7 +245,8 @@ def plot_units_owned(root):
                                 proportion=True, colors=colors, legend_labels=labels)
 
         # --- Create the first tab (Normal) ---
-        create_ts_plot_at_frame(units_value_frame_line, gv.game_ticks_list, unit_values_2d, stacked=False, proportion=False,
+        create_ts_plot_at_frame(units_value_frame_line, gv.game_ticks_list, unit_values_2d, stacked=False,
+                                proportion=False,
                                 colors=colors, legend_labels=labels)
 
         # --- Create the 2nd tab (Normal stacked) ---
@@ -244,10 +269,18 @@ def plot_buildings(root):
     # Create a Notebook (tabs)
     notebook = ttk.Notebook(plot_window)
     notebook.pack(expand=True, fill="both")
+    is_real_player = gv.is_player & (~gv.is_spectator)  # shape (8, ), bool
 
     # colors:
-    colors = [color_idx_to_hex_string.get(c, "#000000") for c in gv.player_colors[:gv.number_of_player]]
-    labels = gv.player_names
+    colors = [color_idx_to_hex_string.get(c, "#000000")
+              for i, c in enumerate(gv.player_colors)
+              if is_real_player[i]
+              ]
+    labels = [
+        nm
+        for i, nm in enumerate(gv.player_names)
+        if is_real_player[i]
+    ]
 
     buildings_count_frame_line = ttk.Frame(notebook)
     notebook.add(buildings_count_frame_line, text="Buildings Count (Line)")
@@ -294,7 +327,8 @@ def plot_buildings(root):
     else:
         buildings_data_3d = np.stack(gv.building_groups_count_list, axis=1)  # get (8, n, NUM_BUILDING_GROUPS)
 
-        building_cost_arr = gv.building_cost_handicap1.astype(np.int64)  # shape (NUM_BUILDINGs, ). astype auto creates a copy
+        building_cost_arr = gv.building_cost_handicap1.astype(
+            np.int64)  # shape (NUM_BUILDINGs, ). astype auto creates a copy
         building_group_avg_cost = np.array(
             [
                 np.sum(building_cost_arr[gv.building_group_index == i]) // np.sum(gv.building_group_index == i)
@@ -307,13 +341,14 @@ def plot_buildings(root):
         building_ones = np.ones(NUM_BUILDING_GROUPS, dtype=np.int64)
 
         buildings_counts_2d_8p = buildings_data_3d @ building_ones  # (8, n)
-        buildings_counts_2d = buildings_counts_2d_8p[:gv.number_of_player, :]
+        buildings_counts_2d = buildings_counts_2d_8p[is_real_player, :]
 
         buildings_values_2d_8p = buildings_data_3d @ building_group_avg_cost  # (8, n)
-        buildings_values_2d = buildings_values_2d_8p[:gv.number_of_player, :]
+        buildings_values_2d = buildings_values_2d_8p[is_real_player, :]
 
         # --- Create the first tab (Normal) ---
-        create_ts_plot_at_frame(buildings_count_frame_line, gv.game_ticks_list, buildings_counts_2d, stacked=False, proportion=False,
+        create_ts_plot_at_frame(buildings_count_frame_line, gv.game_ticks_list, buildings_counts_2d, stacked=False,
+                                proportion=False,
                                 colors=colors, legend_labels=labels)
 
         # --- Create the 2nd tab (Normal stacked) ---
@@ -325,7 +360,8 @@ def plot_buildings(root):
                                 proportion=True, colors=colors, legend_labels=labels)
 
         # --- Create the first tab (Normal) ---
-        create_ts_plot_at_frame(buildings_value_frame_line, gv.game_ticks_list, buildings_values_2d, stacked=False, proportion=False,
+        create_ts_plot_at_frame(buildings_value_frame_line, gv.game_ticks_list, buildings_values_2d, stacked=False,
+                                proportion=False,
                                 colors=colors, legend_labels=labels)
 
         # --- Create the 2nd tab (Normal stacked) ---
@@ -337,10 +373,10 @@ def plot_buildings(root):
                                 proportion=True, colors=colors, legend_labels=labels)
 
         # Factories counts
-        cy_count_data = buildings_data_3d[:gv.number_of_player, :, CONSTRUCTION_YARD_BUILDING_GROUP_INDEX]
-        barracks_count_data = buildings_data_3d[:gv.number_of_player, :, BARRACKS_BUILDING_GROUP_INDEX]
-        light_fac_count_data = buildings_data_3d[:gv.number_of_player, :, LIGHT_FACTORY_BUILDING_GROUP_INDEX]
-        heavy_fac_count_data = buildings_data_3d[:gv.number_of_player, :, HEAVY_FACTORY_BUILDING_GROUP_INDEX]
+        cy_count_data = buildings_data_3d[is_real_player, :, CONSTRUCTION_YARD_BUILDING_GROUP_INDEX]
+        barracks_count_data = buildings_data_3d[is_real_player, :, BARRACKS_BUILDING_GROUP_INDEX]
+        light_fac_count_data = buildings_data_3d[is_real_player, :, LIGHT_FACTORY_BUILDING_GROUP_INDEX]
+        heavy_fac_count_data = buildings_data_3d[is_real_player, :, HEAVY_FACTORY_BUILDING_GROUP_INDEX]
 
         create_ts_plot_at_frame(construction_yard_count_frame, gv.game_ticks_list, cy_count_data, stacked=False,
                                 proportion=False,
