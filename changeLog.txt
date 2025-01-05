@@ -1,3 +1,7 @@
+2025-01-05
+Added plot features.
+Fixed many bugs.
+
 2024-12-31
 Fixed a bug that the app crashes when the game fails to connect.
 Reformatted the log info.
