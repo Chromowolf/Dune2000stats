@@ -34,11 +34,12 @@ BUILDING_TABLE_HEAD_POINTER_ADDR = 0x798880  # pointer (u32)
 BUILDING_GROUPS_COUNT = 0x7BCE31  # u8[100] for each player
 UNITS_EXIST_PER_TYPE = 0x7BCE98  # int32[60] for each player
 
-UNITS_OWNED_TABLE = 0x7BCFF8  # u32[60] for each player
-BUILDINGS_OWNED_TABLE = 0x7BD0E8  # u32[100] for each player
+UNITS_OWNED_TABLE = 0x7BCFF8  # int32[60] for each player
+BUILDINGS_OWNED_TABLE = 0x7BD0E8  # int32[100] for each player
 TOTAL_BUILDINGS_LOST = 0x7BD27C
-UNITS_LOST_TABLE = 0x7BD280  # u32[60] for each player
-UNITS_KILLED_TABLE = 0x7BD508  # u32[60][8] for each player
+UNITS_LOST_TABLE = 0x7BD280  # int32[60] for each player
+UNITS_KILLED_TABLE = 0x7BD508  # int32[60][8] for each player
+BUILDINGS_KILLED_TABLE = 0x7BDC88  # int32[60][8] for each player
 
 TOTAL_BUILDINGS_KILLED = 0x7BD504
 #############################
@@ -96,8 +97,8 @@ class MemoryAddresses:
         self.CNC_MAP_NAME = 0  # char[60]
         self.CNC_MAP_HASH = 0  # char[50] ?
         self.SpawnerActive_ADDR = 0  # Bool
-        self.BUILDINGS_OWNED_TABLE_CNC = 0  # u32[8][62]
-        self.UNITS_OWNED_TABLE_CNC = 0  # u32[8]
+        self.BUILDINGS_OWNED_TABLE_CNC = 0  # int32[8][62]
+        self.UNITS_OWNED_TABLE_CNC = 0  # int32[8]
         self.SpawnerGameEndState_ADDR = 0  # int32
         self.Actual_GameEndState_ADDR = GameEndState_ADDR  # Need to be modified based on whether SpawnActive
         self.MeIsSpectator_ADDR = 0  # bool
