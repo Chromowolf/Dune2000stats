@@ -37,7 +37,7 @@ def import_stats(main_ui):
             if isinstance(loaded_data, type(gv)):
                 gv.update_from_instance(loaded_data)  # Update 'gv' attributes with the loaded instance's attributes
                 # messagebox.showinfo("Success", "Game stats imported successfully.")
-                main_ui.reset_table()
+                main_ui.reset_all_tables()
                 main_ui.set_title_after_game()
                 main_ui.update_all_tables()  # MainApp's update_all_tables()
 

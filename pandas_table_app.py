@@ -212,81 +212,79 @@ class SummaryTable(PandasTableApp):
 
 class DetailsTable(PandasTableApp):
     def set_cells_color(self):
+        # print("DetailsTable set_cells_color called!")
         if gv.number_of_player < 2:  # Game failed to start
             return
 
+        # Color stripe:
+        for rw in [
+            "Buildings Owned Count",
+            "Buildings Killed Count",
+            "Buildings Lost Count",
+            "Buildings Owned Score",
+            "Buildings Killed Score",
+            "Buildings Lost Score",
+        ]:
+            if rw in self.summary_df.index:
+                row_idx = self.summary_df.index.get_loc(rw)
+                self.table.setRowColors(rows=[row_idx], clr="#E0E0E0", cols="all")
+
     def get_data_table(self):
         """
-        Calculate the basic stats based on the updated stats
         :return: A pandas dataframe
         """
-        # OPM
-        avg_OPM = np.zeros(8) if gv.real_second == 0 else gv.total_orders_received * 60 / gv.real_second
+        # print("DetailsTable get_data_table called!")
 
-        # Other player info
+        units_owned_clean = (
+            gv.units_owned_at_start +
+            gv.units_produced +
+            gv.units_from_starport +
+            gv.reinforcements_from_carryall +
+            gv.harvs_from_ref
+        )  # (8, NUM_UNITS)
+        units_owned_clean[:, 0] = gv.units_owned[:, 0]  # Overwrite light infantry
+
+        # debug
+        # def print_array(arr):
+        #     # Nested loop to print the array in a format similar to print(arr)
+        #     for i in range(arr.shape[0]):
+        #         print("[")  # Start of a new "slice" along the first dimension
+        #         for j in range(arr.shape[1]):
+        #             print("  [", end="")  # Start of a new row
+        #             for k in range(arr.shape[2]):
+        #                 print(f"{arr[i, j, k]:2}", end="")  # Print element with padding
+        #                 if k < arr.shape[2] - 1:
+        #                     print(",", end=" ")  # Add comma and space if not the last element
+        #             print("]", end="")
+        #             if j < arr.shape[1] - 1:
+        #                 print(",")
+        #             else:
+        #                 print("")
+        #
+        #         if i < arr.shape[0] - 1:
+        #             print(" ],")  # End of the slice, add comma if not the last slice
+        #         else:
+        #             print("]")
+        #     print("]")  # Close the last bracket
+        #
+        # print_array(gv.buildings_killed_detail)
 
         df_data = [
-            ("Team", gv.player_teams),
-            ("Side", [side_idx_to_name.get(pl_sd, "Unknown") for pl_sd in gv.player_sides[:gv.number_of_player]]),
-            ("Colour", [color_idx_to_name.get(pl_cl, "Unknown") for pl_cl in gv.player_colors[:gv.number_of_player]]),
-            ("Handicap", gv.player_handicaps + 1),
-            ("Victory Status",
-             [victory_status_dict.get(pl_vc, "Unknown") for pl_vc in gv.victory_status[:gv.number_of_player]]),
-            # ("Dead Order", gv.gDeadOrder + 1),
-            ("Finishing Place", gv.finishing_place),
-            ("Start Location", gv.start_location + 1),
-            # ("Credits", gv.spice + gv.cash),
-            ("Credits (before defeated)", gv.spice_before_defeated + gv.cash),
-            ("Spice Harvested", gv.spice_harvested),
+            ("Units Owned Count (Raw)", gv.units_owned.sum(axis=1)),
+            ("Units Owned Count (Clean)", units_owned_clean.sum(axis=1)),
+            ("Units Killed Count", gv.units_killed.sum(axis=1)),
+            ("Units Lost Count", gv.units_lost.sum(axis=1)),
+            ("Buildings Owned Count", gv.buildings_owned.sum(axis=1)),
+            ("Buildings Killed Count", gv.buildings_killed.sum(axis=1)),
+            ("Buildings Lost Count", gv.buildings_lost.sum(axis=1)),
 
-            # ("Unit Expense (handicap1)", gv.unit_expense_handicap1),
-            # ("Building Expense (handicap1)", gv.building_expense_handicap1),
-            ("Buildings Destroyed Count", gv.total_buildings_killed_count),
-            ("Buildings Lost Count", gv.total_buildings_lost_count),
-
-            ("Units Killed Count", gv.total_units_killed_count),
-            ("Units Lost Count", gv.total_units_lost_count),
-
-            ("Units Killed Score", gv.total_units_killed_cost),
-            ("Units Lost Score", gv.total_units_lost_cost),
-            # ("Units Killed Train Time", gv.total_units_killed_train_time),
-            # ("Units Lost Train Time", gv.total_units_lost_train_time),
-
-            ("Low Power (game ticks)", gv.low_power_ticks),
-            ("Low Power (real seconds)", gv.low_power_time_actual.astype(int)),
-            # ("Player Numbers", gv.player_numbers),
-            # ("Left Game At", gv.left_game_at),
-            # ("Current Gameticks", gv.received_game_ticks),
-            # ("Total Freeze Seconds", gv.total_freeze_seconds.astype(int)),
-
-            ("Harvester Count", gv.harvester_count_before_defeated),
-            # ("Harvester Count", gv.harvester_count),
-            # ("Harvesters Owned", gv.units_owned[:, HARVESTER_INDEX]),  # including deviated
-            ("Harvesters Owned",
-             gv.units_produced[:, HARVESTER_INDEX] + gv.units_from_starport[:, HARVESTER_INDEX] + gv.harvs_from_ref[:, HARVESTER_INDEX]),
-            ("Refineries Owned", gv.refineries_owned),
-            ("Starport Deliveries", gv.units_owned[:, 26]),
-            ("Average OPM", [f"{pl_opm:.2f}" for pl_opm in avg_OPM]),
-
-            # ("Effi Building", [f"{pl_ef:.2f}%" for pl_ef in gv.building_efficiency]),
-            ("Effi Building (handicap1)", [f"{pl_ef:.2f}%" for pl_ef in gv.building_efficiency_handicap1]),
-
-            ("Effi Infantry Prod (+Sell)", [f"{ef1:.2f} (+{ef2:.2f})" for ef1, ef2 in
-                                            zip(gv.prod_infantry_effi, gv.light_infantry_by_selling_building_effi)]),
-            ("Effi Light Prod (+Starport)",
-             [f"{ef1:.2f} (+{ef2:.2f})" for ef1, ef2 in zip(gv.prod_light_effi, gv.starport_light_effi)]),
-            ("Effi Heavy Prod (+Starport +Refi)", [f"{ef1:.2f} (+{ef2:.2f} +{ef3:.2f})" for ef1, ef2, ef3 in
-                                                   zip(gv.prod_heavy_effi, gv.starport_heavy_effi,
-                                                       gv.harvesters_from_ref_effi)]),
-
-            # ("Total Production Efficiency", [f"{ef:.2f}%" for ef in gv.prod_total_effi]),
-            ("Total Production Efficiency (1*)", [f"{ef:.2f}%" for ef in gv.prod_total_effi_handicap1]),
-            # ("Total Effi Excluding Refi", [f"{ef:.2f}%" for ef in gv.total_effi_excluding_ref]),
-            ("Total Effi Excluding Refi(1*)", [f"{ef:.2f}%" for ef in gv.total_effi_excluding_ref_handicap1]),
-            # ("Total Effi Including Refi", [f"{ef:.2f}%" for ef in gv.total_effi_including_ref]),
-            ("Total Effi Including Refi (1*)", [f"{ef:.2f}%" for ef in gv.total_effi_including_ref_handicap1]),
-
-            ("[Debug] CNCnet effi", [f"{ef:.2f}" for ef in gv.debug_cncnet_effi]),
+            ("Units Owned Score (Raw)", gv.units_owned @ gv.unit_cost_handicap1),
+            ("Units Owned Score (Clean)", units_owned_clean @ gv.unit_cost_handicap1),
+            ("Units Killed Score", gv.units_killed @ gv.unit_cost_handicap1),
+            ("Units Lost Score", gv.units_lost @ gv.unit_cost_handicap1),
+            ("Buildings Owned Score", gv.buildings_owned @ gv.building_cost_handicap1),
+            ("Buildings Killed Score", gv.buildings_killed @ gv.building_cost_handicap1),
+            ("Buildings Lost Score", gv.buildings_lost @ gv.building_cost_handicap1),
         ]
 
         # Convert to DataFrame

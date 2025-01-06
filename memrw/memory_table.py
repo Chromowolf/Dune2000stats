@@ -39,7 +39,7 @@ BUILDINGS_OWNED_TABLE = 0x7BD0E8  # int32[100] for each player
 TOTAL_BUILDINGS_LOST = 0x7BD27C
 UNITS_LOST_TABLE = 0x7BD280  # int32[60] for each player
 UNITS_KILLED_TABLE = 0x7BD508  # int32[60][8] for each player
-BUILDINGS_KILLED_TABLE = 0x7BDC88  # int32[60][8] for each player
+BUILDINGS_KILLED_TABLE = 0x7BDC88  # int32[100][8] for each player
 
 TOTAL_BUILDINGS_KILLED = 0x7BD504
 #############################

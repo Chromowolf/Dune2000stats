@@ -516,6 +516,15 @@ def _update_units_killed():
     ])
     gv.units_killed = gv.units_killed_detail.sum(axis=2)
 
+def _update_buildings_killed_lost():
+    """
+    Update the buildings_killed_detail game variable, then calculate killed and lost
+    """
+    gv.buildings_killed_detail = np.stack([
+        read_u32_table(BUILDINGS_KILLED_TABLE + PLAYER_DATA_LENGTH * i, shape=(NUM_BUILDINGS, 8)) for i in range(8)
+    ])
+    gv.buildings_killed = gv.buildings_killed_detail.sum(axis=2)
+    gv.buildings_lost = gv.buildings_killed_detail.sum(axis=0).T
 
 def update_unit_scores():
     """
@@ -523,6 +532,7 @@ def update_unit_scores():
     """
     _update_units_lost()
     _update_units_killed()
+    _update_buildings_killed_lost()
 
     gv.total_units_killed_count = gv.units_killed.sum(axis=1)
     gv.total_units_lost_count = gv.units_lost.sum(axis=1)

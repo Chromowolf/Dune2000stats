@@ -300,7 +300,8 @@ def exec_in_game():
             update_stats()
             if gv.MeIsSpectator or debug_mode:
                 # Show / update the table on the UI
-                main_ui.update_summary_table()
+                # main_ui.update_summary_table()
+                main_ui.update_all_tables()
 
         # Update the last_ variables
         # Not using copy, because the array is guaranteed to be assigned to immutable, and assiged to a new array. It's more computationally and memory efficient
@@ -504,7 +505,7 @@ def on_game_start():
         1)  # dim: (62, )
     gv.building_build_time_ticks_handicap1 = 23040 // gv.building_progress_per_tick_handicap1  # dim: (62, )
 
-    main_ui.reset_table()
+    main_ui.reset_all_tables()
     # Debug:
     # print(f"effi_unit_weights: {effi_unit_weights}")
     # print(f"units_owned_start: {gv.units_owned_at_start}")
@@ -707,7 +708,7 @@ def update_stats():
 def refresh_UI():
     root.geometry(f'{app_width}x{app_height}')
     root.update()
-    main_ui.force_redraw()
+    main_ui.force_redraw_all()
 
 
 # Create a class so that other python files can access its attributes
@@ -801,12 +802,13 @@ class MainApp:
             f'End status: {game_end_state_str} '
         )
 
-    def force_redraw(self):
+    def force_redraw_all(self):
         """
         Redraw all the pandas table apps
         :return:
         """
-        self.app_summary_stats.force_redraw()
+        for pt in self.all_pandas_tables:
+            pt.force_redraw()
 
     def update_all_tables(self):
         """
@@ -816,19 +818,20 @@ class MainApp:
         for pt in self.all_pandas_tables:
             pt.update_table()
 
+    def reset_all_tables(self):
+        """
+        Reset all the pandas table apps
+        :return:
+        """
+        for pt in self.all_pandas_tables:
+            pt.reset_table()
+
     def update_summary_table(self):
         """
         Update only the Summary
         :return:
         """
         self.app_summary_stats.update_table()
-
-    def reset_table(self):
-        """
-        Reset all the pandas table apps
-        :return:
-        """
-        self.app_summary_stats.reset_table()
 
 
 if __name__ == "__main__":

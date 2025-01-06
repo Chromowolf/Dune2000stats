@@ -142,18 +142,23 @@ class GameVariable:
         self.unit_progress_per_tick_handicap1 = np.zeros(NUM_UNITS, dtype=np.int32)  # initialized once
         self.unit_build_time_ticks_handicap1 = np.zeros(NUM_UNITS, dtype=np.int32)  # initialized once
 
+        # Buildings stats
         self.buildings_owned = np.zeros((8, NUM_BUILDINGS), dtype=np.int32)  # 8 players, 62 types of buildings
         self.building_groups_count = np.zeros((8, NUM_BUILDING_GROUPS), dtype=np.uint8)  # 8 players, 24 building groups. Buildings currently owned. Used for plotting
+        self.buildings_lost = np.zeros((8, NUM_BUILDINGS), dtype=np.int32)  # 8 players, 62 types of buildings. No direct memory address, must be calculated using buildings_killed_detail
+        self.buildings_killed_detail = np.zeros((8, NUM_BUILDINGS, 8), dtype=np.int32)  # 8 players, 62 types of buildings, 8 p
+        self.buildings_killed = np.zeros((8, NUM_BUILDINGS), dtype=np.int32)  # 8 players, 62 types of buildings
 
+        # Units stats
         self.units_owned = np.zeros((8, NUM_UNITS), dtype=np.int32)  # 8 players, 30 types of units
         self.units_owned_at_start = np.zeros((8, NUM_UNITS), dtype=np.int32)  # initialized once when game tick > 0
         self.starting_units_excluding_mvc = np.zeros((8, NUM_UNITS), dtype=np.int32)  # initialized once when game tick > 0, together with units_owned_at_start, used to calculate cncnet effi
 
         self.units_count = np.zeros((8, NUM_UNITS), dtype=np.int32)  # 8 players, 30 types of units. Units currently owned. Used for plotting
 
-        self.units_lost = np.zeros((8, NUM_UNITS), dtype=np.int32)  # 8 players, 62 types of buildings
+        self.units_lost = np.zeros((8, NUM_UNITS), dtype=np.int32)  # 8 players, 30 types of units
         self.units_killed_detail = np.zeros((8, NUM_UNITS, 8), dtype=np.int32)  # 8 players, 30 types of units, 8 p
-        self.units_killed = np.zeros((8, NUM_UNITS), dtype=np.int32)  # 8 players, 30 types of units, 8 p
+        self.units_killed = np.zeros((8, NUM_UNITS), dtype=np.int32)  # 8 players, 30 types of units
 
         self.refineries_owned = np.zeros(8, dtype=np.int32)  # Updated when _update_buildings_owned() is called
         # Used for calculating efficiency
