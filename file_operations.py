@@ -20,7 +20,7 @@ def export_stats():
             messagebox.showerror("Error", f"An error occurred: {str(e)}")
 
 
-def import_stats(app):
+def import_stats(main_ui):
     """Handles the import of game stats from a .pkl file and updates the global 'gv'."""
     file_path = filedialog.askopenfilename(
         defaultextension=".pkl",
@@ -37,9 +37,9 @@ def import_stats(app):
             if isinstance(loaded_data, type(gv)):
                 gv.update_from_instance(loaded_data)  # Update 'gv' attributes with the loaded instance's attributes
                 # messagebox.showinfo("Success", "Game stats imported successfully.")
-                app.reset_table()
-                app.set_title_after_game()
-                app.update_table()
+                main_ui.reset_table()
+                main_ui.set_title_after_game()
+                main_ui.update_table()
 
             else:
                 messagebox.showerror("Error", "Invalid data format. Expected a GameVariable instance.")

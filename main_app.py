@@ -277,7 +277,7 @@ def exec_in_game():
             gv.total_freeze_seconds[gv.potential_laggers] += gv.real_timestamp_diff_sec
 
     game_end_state_str = game_end_state_dict.get(gv.game_end_state, "Unknown game end state")
-    app.set_title(
+    main_ui.set_title(
         f'[Started: {gv.game_start_timestamp.strftime('%Y-%m-%d %H:%M:%S')}] '
         f'Elapsed time: {timedelta(seconds=gv.real_second)}, effective time: {gv.effective_sec}, game ticks: {gv.gGameTicks}, '
         f'Avg Speed: {gv.average_game_speed:.2f}, '
@@ -300,7 +300,7 @@ def exec_in_game():
             update_stats()
             if gv.MeIsSpectator or debug_mode:
                 # Show / update the table on the UI
-                app.update_table()
+                main_ui.update_table()
 
         # Update the last_ variables
         # Not using copy, because the array is guaranteed to be assigned to immutable, and assiged to a new array. It's more computationally and memory efficient
@@ -317,8 +317,8 @@ def on_game_start():
     """
     Run once on game start, initialized game variables
     """
-    import_button.config(state=tk.DISABLED)
-    right_button_instance.disable_all_buttons()
+    main_ui.import_button.config(state=tk.DISABLED)
+    main_ui.right_button_instance.disable_all_buttons()
 
     gv.clear()  # reset to default values
     gv.spawner_active = global_handle.read_simple_data(mem.SpawnerActive_ADDR, ctypes.c_bool())
@@ -504,7 +504,7 @@ def on_game_start():
         1)  # dim: (62, )
     gv.building_build_time_ticks_handicap1 = 23040 // gv.building_progress_per_tick_handicap1  # dim: (62, )
 
-    app.reset_table()
+    main_ui.reset_table()
     # Debug:
     # print(f"effi_unit_weights: {effi_unit_weights}")
     # print(f"units_owned_start: {gv.units_owned_at_start}")
@@ -518,11 +518,11 @@ def on_game_end():
     if gv.number_of_player < 2:
         print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] Failed to connect! Game ended")
     else:
-        if gv.gGameTicks > app.last_update_gametick:
+        if gv.gGameTicks > main_ui.get_summary_last_update_gametick():
             update_stats()
-            app.update_table()  # Need to update table again when game ends?
+            main_ui.update_table()  # Need to update table again when game ends?
 
-        app.set_title_after_game()
+        main_ui.set_title_after_game()
 
         # f'. Mouse pos: ({gv.mouse_pos_map_tile_x:>3}, {gv.mouse_pos_map_tile_y:>3}), 0x{cur_tile_addr:06X}')
         n_pl = len(gv.player_names)
@@ -536,8 +536,8 @@ def on_game_end():
 
     # Dump data to pickle:
     dump_game_data(gv)
-    import_button.config(state=tk.NORMAL)
-    right_button_instance.enable_all_buttons()
+    main_ui.import_button.config(state=tk.NORMAL)
+    main_ui.right_button_instance.enable_all_buttons()
 
     # # Dump data to tables
     # if gv.number_of_player > 1:
@@ -707,21 +707,116 @@ def update_stats():
 def refresh_UI():
     root.geometry(f'{app_width}x{app_height}')
     root.update()
-    app.force_redraw()
+    main_ui.force_redraw()
+
+
+# Create a class so that other python files can access its attributes
+class MainApp:
+    # Symbols: ┌ ┐ └ ┘ ┬ ┴ ├ ┤
+    # ┌---------------------------------┐
+    # | Main Frame (LabelFrame)         |
+    # |┌-------------------------------┐|
+    # || Notebook [Tab:Summary][Tab:..]||
+    # |├-------------------------------┤|
+    # || Button Frame                  ||
+    # ||┌--------------┬--------------┐||
+    # ||| Left buttons | Right buttons|||
+    # ||└--------------┴--------------┘||
+    # |└-------------------------------┘|
+    # └---------------------------------┘
+    def __init__(self, master):
+        self.root = master
+
+        # Create the frame of the table app
+        self.main_frame = ttk.LabelFrame(self.root, text="No game data found", style="yahei10.TLabelframe")
+        self.main_frame.pack(fill=tk.BOTH, expand=True)
+
+        # Create a Notebook on the frame
+        self.main_stats_notebook = ttk.Notebook(self.main_frame)
+        self.main_stats_notebook.pack(expand=True, fill="both")
+
+        self.summary_stats_frame = ttk.Frame(self.main_stats_notebook)
+        self.main_stats_notebook.add(self.summary_stats_frame, text="Summary")
+
+        self.app_summary_stats = PandasTableApp(self.summary_stats_frame)  # The pandas table app
+
+        # refresh_button = ttk.Button(master, text="Refresh", command=refresh_UI)
+        # refresh_button.pack()
+        # Create a frame for buttons at the bottom
+        self.button_frame = ttk.Frame(self.root)
+        self.button_frame.pack(side=tk.BOTTOM, fill=tk.X, padx=10, pady=10)
+
+        self.left_button_frame = ttk.Frame(self.button_frame)
+        self.left_button_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+
+        self.right_button_frame = ttk.Frame(self.button_frame, borderwidth=1, relief=tk.SOLID)
+        self.right_button_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
+
+        ###############
+        # Left buttons
+        ###############
+        # Refresh button
+        self.refresh_button = ttk.Button(self.left_button_frame, text="Refresh", command=refresh_UI)
+        self.refresh_button.pack(side=tk.LEFT, padx=5, pady=5)
+
+        # Import button
+        self.import_button = ttk.Button(self.left_button_frame, text="Import", command=lambda: import_stats(main_ui))
+        self.import_button.pack(side=tk.LEFT, padx=5, pady=5)
+
+        # Export button
+        self.export_button = ttk.Button(self.left_button_frame, text="Export", command=export_stats)
+        self.export_button.pack(side=tk.LEFT, padx=5, pady=5)
+
+        ###############
+        # Right buttons
+        ###############
+        self.right_button_instance = RightButtons(root, self.right_button_frame)
+
+    def get_summary_last_update_gametick(self):
+        return self.app_summary_stats.last_update_gametick
+
+    def set_title(self, new_title):
+        """
+        :param new_title: str
+        :return:
+        """
+        # Run every loop.
+        # self.root.title(new_title)  # If self.root is the root of tk
+        self.main_frame.configure(text=new_title)  # If self.root is a LabelFrame
+
+    def set_title_after_game(self):
+        game_end_state_str = game_end_state_dict.get(gv.game_end_state, "Unknown game end state")
+        self.set_title(
+            f'[Started: {gv.game_start_timestamp.strftime('%Y-%m-%d %H:%M:%S')}] '
+            f'Elapsed time: {timedelta(seconds=gv.real_second)}, effective time: {gv.effective_sec}, game ticks: {gv.gGameTicks}, '
+            f'Avg Speed: {gv.average_game_speed:.2f}, '
+            f'Map: {gv.map_name}. '
+            f'End status: {game_end_state_str} '
+        )
+
+    def force_redraw(self):
+        """
+        Redraw all the pandas table apps
+        :return:
+        """
+        self.app_summary_stats.force_redraw()
+
+    def update_table(self):
+        """
+        Update all the pandas table apps
+        :return:
+        """
+        self.app_summary_stats.update_table()
+
+    def reset_table(self):
+        """
+        Reset all the pandas table apps
+        :return:
+        """
+        self.app_summary_stats.reset_table()
 
 
 if __name__ == "__main__":
-    # Symbols: ┌ ┐ └ ┘ ┬ ┴ ├ ┤
-    #
-    # ┌-------------------------------┐
-    # | Table Frame (LabelFrame)      |
-    # ├-------------------------------┤
-    # | Button Frame                  |
-    # |┌--------------┬--------------┐|
-    # || Left buttons | Right buttons||
-    # |└--------------┴--------------┘|
-    # └-------------------------------┘
-
     log_file = setup_logging()
 
     # tk part
@@ -744,7 +839,7 @@ if __name__ == "__main__":
     #         print(f"Error setting executable icon: {e}")
 
     app_width = 1400
-    app_height = 800
+    app_height = 820
     root.geometry(f'{app_width}x{app_height}')
 
     s = ttk.Style()  # Create a ttk style object, to change the font of ttk.Button
@@ -754,42 +849,7 @@ if __name__ == "__main__":
     s.configure('yahei10.TLabelframe')
     s.configure('yahei10.TLabelframe.Label', font=("Microsoft YaHei", 10))
 
-    # Create the frame of the table app
-    table_frame = ttk.LabelFrame(root, text="No game data found", style="yahei10.TLabelframe")
-    table_frame.pack(fill=tk.BOTH, expand=True)
-    app = PandasTableApp(table_frame)
-
-    # refresh_button = ttk.Button(root, text="Refresh", command=refresh_UI)
-    # refresh_button.pack()
-    # Create a frame for buttons at the bottom
-    button_frame = ttk.Frame(root)
-    button_frame.pack(side=tk.BOTTOM, fill=tk.X, padx=10, pady=10)
-
-    left_button_frame = ttk.Frame(button_frame)
-    left_button_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
-
-    right_button_frame = ttk.Frame(button_frame, borderwidth=1, relief=tk.SOLID)
-    right_button_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
-
-    ###############
-    # Left buttons
-    ###############
-    # Refresh button
-    refresh_button = ttk.Button(left_button_frame, text="Refresh", command=refresh_UI)
-    refresh_button.pack(side=tk.LEFT, padx=5, pady=5)
-
-    # Import button
-    import_button = ttk.Button(left_button_frame, text="Import", command=lambda: import_stats(app))
-    import_button.pack(side=tk.LEFT, padx=5, pady=5)
-
-    # Export button
-    export_button = ttk.Button(left_button_frame, text="Export", command=export_stats)
-    export_button.pack(side=tk.LEFT, padx=5, pady=5)
-
-    ###############
-    # Right buttons
-    ###############
-    right_button_instance = RightButtons(root, right_button_frame)
+    main_ui = MainApp(root)
 
     n = 0  # Number of seconds passed when searching for d2k process
     monitor_process()

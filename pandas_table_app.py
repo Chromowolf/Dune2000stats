@@ -7,7 +7,7 @@ import pandas as pd
 from pandastable import Table
 from enums import *
 from gamedata.unitsdata import *
-from datetime import timedelta
+# from datetime import timedelta
 
 
 def get_data_table():
@@ -194,18 +194,3 @@ class PandasTableApp:
         if self.summary_df is not None:
             self.summary_df = None  # Reset the underlying pandas df
         self.last_update_gametick = -1
-
-    def set_title(self, new_title):
-        # Run every loop.
-        # self.root.title(new_title)  # If self.root is the root of tk
-        self.root.configure(text=new_title)  # If self.root is a LabelFrame
-
-    def set_title_after_game(self):
-        game_end_state_str = game_end_state_dict.get(gv.game_end_state, "Unknown game end state")
-        self.set_title(
-            f'[Started: {gv.game_start_timestamp.strftime('%Y-%m-%d %H:%M:%S')}] '
-            f'Elapsed time: {timedelta(seconds=gv.real_second)}, effective time: {gv.effective_sec}, game ticks: {gv.gGameTicks}, '
-            f'Avg Speed: {gv.average_game_speed:.2f}, '
-            f'Map: {gv.map_name}. '
-            f'End status: {game_end_state_str} '
-        )
