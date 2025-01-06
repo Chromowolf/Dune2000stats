@@ -25,7 +25,7 @@ import capture_production
 
 # import pandas as pd
 import numpy as np
-from pandas_table_app import PandasTableApp
+from pandas_table_app import SummaryTable, DetailsTable
 from buttons_right import RightButtons
 
 from find_cliques import find_maximal_cliques_with_pivot
@@ -39,7 +39,7 @@ from file_operations import export_stats, import_stats  # Import the functions f
 # Suppress FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated...
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
-debug_mode = False
+debug_mode = True
 
 in_game = False
 in_game_prev = False  # if the game starts when last time we check
@@ -300,7 +300,7 @@ def exec_in_game():
             update_stats()
             if gv.MeIsSpectator or debug_mode:
                 # Show / update the table on the UI
-                main_ui.update_table()
+                main_ui.update_summary_table()
 
         # Update the last_ variables
         # Not using copy, because the array is guaranteed to be assigned to immutable, and assiged to a new array. It's more computationally and memory efficient
@@ -520,7 +520,7 @@ def on_game_end():
     else:
         if gv.gGameTicks > main_ui.get_summary_last_update_gametick():
             update_stats()
-            main_ui.update_table()  # Need to update table again when game ends?
+            main_ui.update_all_tables()  # Need to update table again when game ends?
 
         main_ui.set_title_after_game()
 
@@ -735,10 +735,17 @@ class MainApp:
         self.main_stats_notebook = ttk.Notebook(self.main_frame)
         self.main_stats_notebook.pack(expand=True, fill="both")
 
+        self.all_pandas_tables = []
+
         self.summary_stats_frame = ttk.Frame(self.main_stats_notebook)
         self.main_stats_notebook.add(self.summary_stats_frame, text="Summary")
+        self.app_summary_stats = SummaryTable(self.summary_stats_frame)  # The pandas table app
+        self.all_pandas_tables.append(self.app_summary_stats)
 
-        self.app_summary_stats = PandasTableApp(self.summary_stats_frame)  # The pandas table app
+        self.detailed_stats_frame = ttk.Frame(self.main_stats_notebook)
+        self.main_stats_notebook.add(self.detailed_stats_frame, text="Other Details")
+        self.app_detailed_stats = DetailsTable(self.detailed_stats_frame)  # The pandas table app
+        self.all_pandas_tables.append(self.app_detailed_stats)
 
         # refresh_button = ttk.Button(master, text="Refresh", command=refresh_UI)
         # refresh_button.pack()
@@ -801,9 +808,17 @@ class MainApp:
         """
         self.app_summary_stats.force_redraw()
 
-    def update_table(self):
+    def update_all_tables(self):
         """
         Update all the pandas table apps
+        :return:
+        """
+        for pt in self.all_pandas_tables:
+            pt.update_table()
+
+    def update_summary_table(self):
+        """
+        Update only the Summary
         :return:
         """
         self.app_summary_stats.update_table()
@@ -848,6 +863,9 @@ if __name__ == "__main__":
     # Configure the style for TLabelFrame.Label
     s.configure('yahei10.TLabelframe')
     s.configure('yahei10.TLabelframe.Label', font=("Microsoft YaHei", 10))
+
+    # Configure the tab style (add padding around text)
+    s.configure("TNotebook.Tab", padding=[10, 0])
 
     main_ui = MainApp(root)
 

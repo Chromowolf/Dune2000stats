@@ -39,7 +39,7 @@ def import_stats(main_ui):
                 # messagebox.showinfo("Success", "Game stats imported successfully.")
                 main_ui.reset_table()
                 main_ui.set_title_after_game()
-                main_ui.update_table()
+                main_ui.update_all_tables()  # MainApp's update_all_tables()
 
             else:
                 messagebox.showerror("Error", "Invalid data format. Expected a GameVariable instance.")
