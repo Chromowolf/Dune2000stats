@@ -5,6 +5,7 @@ from tkinter import ttk
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
+from matplotlib.ticker import MaxNLocator
 from enums import color_idx_to_hex_string
 from gamedata.unitsdata import (
     CARRYALL_INDEX,
@@ -42,7 +43,7 @@ def create_ts_plot_at_frame(frame, x, y, stacked=False, proportion=False, colors
     if not legend_labels:
         legend_labels = [f"Series {i}" for i in range(n_line)]
 
-    if proportion:
+    if proportion:  # Proportion
         # stacked = True
         row_sums = y.sum(axis=0)  # Sum across col
         proportions = np.divide(y, row_sums, where=(row_sums != 0),
@@ -54,14 +55,15 @@ def create_ts_plot_at_frame(frame, x, y, stacked=False, proportion=False, colors
         ax.set_ylim(top=1)
         ax.set_title("Time Series Plot (Proportion)")
     else:
-        if stacked:
+        if stacked:  # Stacked
             # ax.stackplot(x, y, baseline='wiggle', colors=colors, labels=legend_labels)  # Stack plot of proportion
             ax.stackplot(x, y, colors=colors, labels=legend_labels)  # Stack plot of proportion
             ax.legend(loc='upper left')
             ax.set_xlabel("Time")
             ax.set_ylabel("Number")
             ax.set_title("Time Series Plot (Stacked)")
-        else:
+            ax.yaxis.set_major_locator(MaxNLocator(integer=True))
+        else:  # Line
             # ax.plot(x, y.T)  # Stack plot of proportion
             # ax.legend([f"Series{i}" for i in range(n_line)], loc='upper left')
             for i in range(n_line):
@@ -70,6 +72,7 @@ def create_ts_plot_at_frame(frame, x, y, stacked=False, proportion=False, colors
             ax.set_xlabel("Time")
             ax.set_ylabel("Number")
             ax.set_title("Time Series Plot (Line)")
+            ax.yaxis.set_major_locator(MaxNLocator(integer=True))
 
     ax.grid(True)
     ax.set_xlim(left=kwargs.get('xlim_left', 0), right=kwargs.get('xlim_right'))
@@ -380,16 +383,16 @@ def plot_buildings(root):
 
         create_ts_plot_at_frame(construction_yard_count_frame, gv.game_ticks_list, cy_count_data, stacked=False,
                                 proportion=False,
-                                colors=colors, legend_labels=labels, ylim_top=10)
+                                colors=colors, legend_labels=labels)
 
         create_ts_plot_at_frame(barracks_count_frame, gv.game_ticks_list, barracks_count_data, stacked=False,
                                 proportion=False,
-                                colors=colors, legend_labels=labels, ylim_top=10)
+                                colors=colors, legend_labels=labels)
 
         create_ts_plot_at_frame(light_factory_count_frame, gv.game_ticks_list, light_fac_count_data, stacked=False,
                                 proportion=False,
-                                colors=colors, legend_labels=labels, ylim_top=10)
+                                colors=colors, legend_labels=labels)
 
         create_ts_plot_at_frame(heavy_factory_count_frame, gv.game_ticks_list, heavy_fac_count_data, stacked=False,
                                 proportion=False,
-                                colors=colors, legend_labels=labels, ylim_top=10)
+                                colors=colors, legend_labels=labels)
