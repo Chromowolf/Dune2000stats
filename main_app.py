@@ -32,9 +32,7 @@ from find_cliques import find_maximal_cliques_with_pivot
 
 from redirect_output import setup_logging, close_logging
 
-from dump_data import dump_game_data
-
-from file_operations import export_stats, import_stats  # Import the functions from the new module
+from file_operations import export_stats, import_stats, dump_game_data  # Import the functions from the new module
 
 # Suppress FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated...
 warnings.simplefilter(action='ignore', category=FutureWarning)
