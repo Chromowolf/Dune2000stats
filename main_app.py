@@ -112,10 +112,10 @@ def exec_in_game():
         # noinspection all
         gv.gDeadOrder = np.array(global_handle.read_from_memory(0x797B70, (ctypes.c_int8 * 8)()))
         # noinspection all
-        has_units = np.array(global_handle.read_from_memory(0x6B8268, (ctypes.c_bool * 8)()))
+        gv.has_units = np.array(global_handle.read_from_memory(0x6B8268, (ctypes.c_bool * 8)()))
         # noinspection all
-        has_buildings = np.array(global_handle.read_from_memory(0x6B87C0, (ctypes.c_bool * 8)()))
-        gv.has_nothing = ~(has_units | has_buildings)
+        gv.has_buildings = np.array(global_handle.read_from_memory(0x6B87C0, (ctypes.c_bool * 8)()))
+        gv.has_nothing = ~(gv.has_units | gv.has_buildings)
 
         # If player has quitted program
         gv.left_game_at = np.array([

@@ -13,6 +13,8 @@ class GameVariable:
         #
         # gGameticks: int 0x5173F4
         # elapsed_real_sec: float (computed)
+        # has_units: bool[8] 0x6B8268
+        # has_buildings: bool[8] 0x6B87C0
         # spice: int32[8] 0x7BCAC4 (+0x24254)
         # cash: int32[8] 0x7BCACC (+0x2425C)
         # credits: int32[8] (spice+cash)
@@ -114,6 +116,8 @@ class GameVariable:
         self.player_names = []
         self.is_player = np.full(8, False, dtype=bool)   # initialized once. First n elements are True, n being total number of players
         self.is_spectator = np.full(8, False, dtype=bool)   # initialized once
+        self.has_units = np.full(8, False, dtype=bool)  # 0x6B8268
+        self.has_buildings = np.full(8, False, dtype=bool)  # 0x6B87C0
         self.has_nothing = np.full(8, True, dtype=bool)   # True: no unit or building. Used for victory checking
         self.is_defeated = np.full(8, False, dtype=bool)  # True: not in game, False: in game. True when first time has_nothing, but might still be spectating. Used for finishing place.
         self.has_quitted = np.full(8, False, dtype=bool)   # True: has quitted program, game ticks no longer increases. False: hasn't quitted yet. Only apply to humna players.
@@ -268,6 +272,9 @@ class GameVariable:
         self.weighted_sum_gameticks_excluding_ref_handicap1 = np.zeros(8)  # / gameticks = total_effi_excluding_ref_handicap1
         self.weighted_sum_gameticks_including_ref_handicap1 = np.zeros(8)  # / gameticks = total_effi_including_ref_handicap1
 
+        self.has_units_list = []
+        self.has_buildings_list = []
+
         self.spice_list = []
         self.cash_list = []
         self.spice_harvested_list = []
@@ -394,10 +401,13 @@ class GameVariable:
         self.game_ticks_list.append(self.gGameTicks)
         self.elapsed_real_sec_list.append(self.elapsed_real_sec)
 
+        self.has_units_list.append(self.has_units.copy())
+        self.has_buildings_list.append(self.has_buildings.copy())
+
         self.spice_list.append(self.spice.copy())  # Must append a copy, because harvester_count is modified in-place
-        self.cash_list.append(self.cash.copy())  # Must append a copy, because harvester_count is modified in-place
+        self.cash_list.append(self.cash.copy())  # Must append a copy, because cash is modified in-place
         self.credits_list.append(self.spice + self.cash)  # Unnecesary, but legacy
-        self.spice_harvested_list.append(self.spice_harvested.copy())  # Must append a copy, because harvester_count is modified in-place
+        self.spice_harvested_list.append(self.spice_harvested.copy())  # Must append a copy, because spice_harvested is modified in-place
 
         self.power_output_list.append(self.power_output.copy())
         self.power_drained_list.append(self.power_drained.copy())

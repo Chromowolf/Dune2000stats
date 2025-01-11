@@ -20,13 +20,18 @@ from gamedata.unitsdata import (
 )
 
 
-def create_ts_plot_at_frame(frame, x, y, stacked=False, proportion=False, colors=None, legend_labels=None, **kwargs):
+def create_ts_plot_at_frame(frame, x, y,
+                            title=None, xlabel=None, ylabel=None,
+                            stacked=False, proportion=False, colors=None, legend_labels=None, **kwargs):
     """
     If proportion is True, then stacked is automatically true
     Args:
         frame: the tk frame
         x:
         y: 2d array
+        title: Custom title
+        xlabel:
+        ylabel:
         stacked:
         proportion:
         colors: iterable of length y.shape[0], specifying the color code
@@ -50,18 +55,18 @@ def create_ts_plot_at_frame(frame, x, y, stacked=False, proportion=False, colors
                                 out=np.full_like(y, 0, dtype=float))
         ax.stackplot(x, proportions, colors=colors, labels=legend_labels)  # Stack plot of proportion
         ax.legend(loc='upper left')
-        ax.set_xlabel("Time")
-        ax.set_ylabel("Proportion")
+        ax.set_xlabel("Time" if not xlabel else xlabel)
+        ax.set_ylabel("Proportion" if not ylabel else ylabel)
         ax.set_ylim(top=1)
-        ax.set_title("Time Series Plot (Proportion)")
+        ax.set_title("Time Series Plot (Proportion)" if not title else title)
     else:
         if stacked:  # Stacked
             # ax.stackplot(x, y, baseline='wiggle', colors=colors, labels=legend_labels)  # Stack plot of proportion
             ax.stackplot(x, y, colors=colors, labels=legend_labels)  # Stack plot of proportion
             ax.legend(loc='upper left')
-            ax.set_xlabel("Time")
-            ax.set_ylabel("Number")
-            ax.set_title("Time Series Plot (Stacked)")
+            ax.set_xlabel("Time" if not xlabel else xlabel)
+            ax.set_ylabel("Number" if not ylabel else ylabel)
+            ax.set_title("Time Series Plot (Stacked)" if not title else title)
             ax.yaxis.set_major_locator(MaxNLocator(integer=True))
         else:  # Line
             # ax.plot(x, y.T)  # Stack plot of proportion
@@ -69,14 +74,19 @@ def create_ts_plot_at_frame(frame, x, y, stacked=False, proportion=False, colors
             for i in range(n_line):
                 ax.plot(x, y[i, :], color=colors[i] if colors else None, label=legend_labels[i])
             ax.legend(loc='upper left')
-            ax.set_xlabel("Time")
-            ax.set_ylabel("Number")
-            ax.set_title("Time Series Plot (Line)")
+            ax.set_xlabel("Time" if not xlabel else xlabel)
+            ax.set_ylabel("Number" if not ylabel else ylabel)
+            ax.set_title("Time Series Plot (Line)" if not title else title)
             ax.yaxis.set_major_locator(MaxNLocator(integer=True))
 
     ax.grid(True)
     ax.set_xlim(left=kwargs.get('xlim_left', 0), right=kwargs.get('xlim_right'))
     ax.set_ylim(bottom=kwargs.get('ylim_bottom', 0), top=kwargs.get('ylim_top'))
+
+    hline_y = kwargs.get('hline_y', None)
+    if hline_y is not None:
+        # noinspection all
+        ax.axhline(y=hline_y, color='grey', linestyle='--', alpha=0.3)
 
     canvas = FigureCanvasTkAgg(fig, master=frame)
     canvas.draw()
@@ -131,15 +141,15 @@ def plot_economy(root):
         credit_data_2d = np.stack(gv.credits_list, axis=1)[is_real_player, :]  # Stack arrays vertically
         # --- Create the first tab (Normal) ---
         create_ts_plot_at_frame(credits_frame_line, gv.game_ticks_list, credit_data_2d, stacked=False, proportion=False,
-                                colors=colors, legend_labels=labels)
+                                colors=colors, legend_labels=labels, title="Credits (Line Plot)")
 
         # --- Create the 2nd tab (Normal stacked) ---
         create_ts_plot_at_frame(credits_frame_stacked, gv.game_ticks_list, credit_data_2d, stacked=True,
-                                proportion=False, colors=colors, legend_labels=labels)
+                                proportion=False, colors=colors, legend_labels=labels, title="Credits (Stacked Plot)")
 
         # --- Create the 3rd tab (Proportion Plot) ---
         create_ts_plot_at_frame(credits_frame_proportion, gv.game_ticks_list, credit_data_2d, stacked=True,
-                                proportion=True, colors=colors, legend_labels=labels)
+                                proportion=True, colors=colors, legend_labels=labels, title="Credits (Stacked Proportion Plot)")
 
     #############
     # Harvesters
@@ -160,15 +170,15 @@ def plot_economy(root):
         harv_data_2d = np.stack(harv_data_list, axis=1)[is_real_player, :]  # Stack arrays vertically
         # --- Create the first tab (Normal) ---
         create_ts_plot_at_frame(harv_frame_line, gv.game_ticks_list, harv_data_2d, stacked=False, proportion=False,
-                                colors=colors, legend_labels=labels)
+                                colors=colors, legend_labels=labels, title="Harvesters Currently Owned (Line Plot)")
 
         # --- Create the 2nd tab (Normal stacked) ---
         create_ts_plot_at_frame(harv_frame_stacked, gv.game_ticks_list, harv_data_2d, stacked=True, proportion=False,
-                                colors=colors, legend_labels=labels)
+                                colors=colors, legend_labels=labels, title="Harvesters Currently Owned (Stacked Plot)")
 
         # --- Create the 3rd tab (Proportion Plot) ---
         create_ts_plot_at_frame(harv_frame_proportion, gv.game_ticks_list, harv_data_2d, stacked=True, proportion=True,
-                                colors=colors, legend_labels=labels)
+                                colors=colors, legend_labels=labels, title="Harvesters Currently Owned (Stacked Proportion Plot)")
 
 
 def plot_units_owned(root):
@@ -237,28 +247,28 @@ def plot_units_owned(root):
         # --- Create the first tab (Normal) ---
         create_ts_plot_at_frame(units_count_frame_line, gv.game_ticks_list, unit_counts_2d, stacked=False,
                                 proportion=False,
-                                colors=colors, legend_labels=labels)
+                                colors=colors, legend_labels=labels, title="Units Currently Owned Count (Line Plot)")
 
         # --- Create the 2nd tab (Normal stacked) ---
         create_ts_plot_at_frame(units_count_frame_stacked, gv.game_ticks_list, unit_counts_2d, stacked=True,
-                                proportion=False, colors=colors, legend_labels=labels)
+                                proportion=False, colors=colors, legend_labels=labels, title="Units Currently Owned Count (Stacked Plot)")
 
         # --- Create the 3rd tab (Proportion Plot) ---
         create_ts_plot_at_frame(units_count_frame_proportion, gv.game_ticks_list, unit_counts_2d, stacked=True,
-                                proportion=True, colors=colors, legend_labels=labels)
+                                proportion=True, colors=colors, legend_labels=labels, title="Units Currently Owned Count (Stacked Proportion Plot)")
 
         # --- Create the first tab (Normal) ---
         create_ts_plot_at_frame(units_value_frame_line, gv.game_ticks_list, unit_values_2d, stacked=False,
                                 proportion=False,
-                                colors=colors, legend_labels=labels)
+                                colors=colors, legend_labels=labels, title="Value of Units Currently Owned (Line Plot)")
 
         # --- Create the 2nd tab (Normal stacked) ---
         create_ts_plot_at_frame(units_value_frame_stacked, gv.game_ticks_list, unit_values_2d, stacked=True,
-                                proportion=False, colors=colors, legend_labels=labels)
+                                proportion=False, colors=colors, legend_labels=labels, title="Value of Units Currently Owned (Stacked Plot)")
 
         # --- Create the 3rd tab (Proportion Plot) ---
         create_ts_plot_at_frame(units_value_frame_proportion, gv.game_ticks_list, unit_values_2d, stacked=True,
-                                proportion=True, colors=colors, legend_labels=labels)
+                                proportion=True, colors=colors, legend_labels=labels, title="Value of Units Currently Owned (Stacked Proportion Plot)")
 
 
 def plot_buildings(root):
@@ -315,6 +325,8 @@ def plot_buildings(root):
     heavy_factory_count_frame = ttk.Frame(notebook)
     notebook.add(heavy_factory_count_frame, text="Heavy Factory")
 
+    # Test
+
     if not hasattr(gv, "building_groups_count_list") or not gv.building_groups_count_list:
         ttk.Label(buildings_count_frame_line, text="No buildings data found!", style="yahei20.TLabel").pack()
         ttk.Label(buildings_count_frame_stacked, text="No buildings data found!", style="yahei20.TLabel").pack()
@@ -352,28 +364,28 @@ def plot_buildings(root):
         # --- Create the first tab (Normal) ---
         create_ts_plot_at_frame(buildings_count_frame_line, gv.game_ticks_list, buildings_counts_2d, stacked=False,
                                 proportion=False,
-                                colors=colors, legend_labels=labels)
+                                colors=colors, legend_labels=labels, title="Buildings Currently Owned Count (Line Plot)")
 
         # --- Create the 2nd tab (Normal stacked) ---
         create_ts_plot_at_frame(buildings_count_frame_stacked, gv.game_ticks_list, buildings_counts_2d, stacked=True,
-                                proportion=False, colors=colors, legend_labels=labels)
+                                proportion=False, colors=colors, legend_labels=labels, title="Buildings Currently Owned Count (Stacked Plot)")
 
         # --- Create the 3rd tab (Proportion Plot) ---
         create_ts_plot_at_frame(buildings_count_frame_proportion, gv.game_ticks_list, buildings_counts_2d, stacked=True,
-                                proportion=True, colors=colors, legend_labels=labels)
+                                proportion=True, colors=colors, legend_labels=labels, title="Buildings Currently Owned Count (Stacked Proportion Plot)")
 
         # --- Create the first tab (Normal) ---
         create_ts_plot_at_frame(buildings_value_frame_line, gv.game_ticks_list, buildings_values_2d, stacked=False,
                                 proportion=False,
-                                colors=colors, legend_labels=labels)
+                                colors=colors, legend_labels=labels, title="Value of Buildings Currently Owned (Line Plot)")
 
         # --- Create the 2nd tab (Normal stacked) ---
         create_ts_plot_at_frame(buildings_value_frame_stacked, gv.game_ticks_list, buildings_values_2d, stacked=True,
-                                proportion=False, colors=colors, legend_labels=labels)
+                                proportion=False, colors=colors, legend_labels=labels, title="Value of Buildings Currently Owned (Stacked Plot)")
 
         # --- Create the 3rd tab (Proportion Plot) ---
         create_ts_plot_at_frame(buildings_value_frame_proportion, gv.game_ticks_list, buildings_values_2d, stacked=True,
-                                proportion=True, colors=colors, legend_labels=labels)
+                                proportion=True, colors=colors, legend_labels=labels, title="Value of Buildings Currently Owned (Stacked Proportion Plot)")
 
         # Factories counts
         cy_count_data = buildings_data_3d[is_real_player, :, CONSTRUCTION_YARD_BUILDING_GROUP_INDEX]
@@ -383,16 +395,82 @@ def plot_buildings(root):
 
         create_ts_plot_at_frame(construction_yard_count_frame, gv.game_ticks_list, cy_count_data, stacked=False,
                                 proportion=False,
-                                colors=colors, legend_labels=labels)
+                                colors=colors, legend_labels=labels, title="Construction Yards Currently Owned Count (Line Plot)")
 
         create_ts_plot_at_frame(barracks_count_frame, gv.game_ticks_list, barracks_count_data, stacked=False,
                                 proportion=False,
-                                colors=colors, legend_labels=labels)
+                                colors=colors, legend_labels=labels, title="Barracks Currently Owned Count (Line Plot)")
 
         create_ts_plot_at_frame(light_factory_count_frame, gv.game_ticks_list, light_fac_count_data, stacked=False,
                                 proportion=False,
-                                colors=colors, legend_labels=labels)
+                                colors=colors, legend_labels=labels, title="Light Factories Currently Owned Count (Line Plot)")
 
         create_ts_plot_at_frame(heavy_factory_count_frame, gv.game_ticks_list, heavy_fac_count_data, stacked=False,
                                 proportion=False,
-                                colors=colors, legend_labels=labels)
+                                colors=colors, legend_labels=labels, title="Heavy Factories Currently Owned Count (Line Plot)")
+
+
+def plot_powers(root):
+    plot_window = tk.Toplevel(root)
+    plot_window.title("Power Plot")
+    plot_window.geometry("1280x720")
+    if not hasattr(gv, "game_ticks_list") or not gv.game_ticks_list:
+        ttk.Label(plot_window, text="No game data!", style="yahei20.TLabel").pack()
+        return
+
+    # Create a Notebook (tabs)
+    notebook = ttk.Notebook(plot_window)
+    notebook.pack(expand=True, fill="both")
+    is_real_player = gv.is_player & (~gv.is_spectator)  # shape (8, ), bool
+
+    # colors:
+    colors = [color_idx_to_hex_string.get(c, "#000000")
+              for i, c in enumerate(gv.player_colors)
+              if is_real_player[i]
+              ]
+    labels = [
+        nm
+        for i, nm in enumerate(gv.player_names)
+        if is_real_player[i]
+    ]
+
+    power_percent_frame = ttk.Frame(notebook)
+    notebook.add(power_percent_frame, text="Power Percent")
+
+    power_output_frame = ttk.Frame(notebook)
+    notebook.add(power_output_frame, text="Power Output")
+
+    power_drained_frame = ttk.Frame(notebook)
+    notebook.add(power_drained_frame, text="Power Drained")
+
+    if not hasattr(gv, "power_output_list") or not gv.power_output_list:
+        ttk.Label(power_percent_frame, text="No powers data found!", style="yahei20.TLabel").pack()
+        ttk.Label(power_output_frame, text="No powers data found!", style="yahei20.TLabel").pack()
+        ttk.Label(power_drained_frame, text="No powers data found!", style="yahei20.TLabel").pack()
+    else:
+        power_output_2d = np.stack(gv.power_output_list, axis=1)[is_real_player, :]  # get (p, n)
+        power_drained_2d = np.stack(gv.power_drained_list, axis=1)[is_real_player, :]  # get (p, n)
+        if not hasattr(gv, "has_buildings_list") or not gv.has_buildings_list:
+            has_buildings_2d = np.full((is_real_player.sum(), len(gv.power_drained_list)), True, dtype=bool)
+        else:
+            has_buildings_2d = np.stack(gv.has_buildings_list, axis=1)[is_real_player, :]
+
+        power_percent_2d = np.floor_divide(
+            power_output_2d * 100,
+            power_drained_2d,
+            where=(power_drained_2d != 0),
+            out=np.where(has_buildings_2d, 200, 0)
+        )
+
+        create_ts_plot_at_frame(power_percent_frame, gv.game_ticks_list, power_percent_2d, stacked=False,
+                                proportion=False,
+                                colors=colors, legend_labels=labels, hline_y=100, title="Power Percent Over Time")
+
+        create_ts_plot_at_frame(power_output_frame, gv.game_ticks_list, power_output_2d, stacked=False,
+                                proportion=False,
+                                colors=colors, legend_labels=labels, title="Power Output Over Time")
+
+        # --- Create the 3rd tab (Proportion Plot) ---
+        create_ts_plot_at_frame(power_drained_frame, gv.game_ticks_list, power_drained_2d, stacked=False,
+                                proportion=False,
+                                colors=colors, legend_labels=labels, title="Power Drained Over Time")

@@ -27,6 +27,11 @@ class RightButtons:
         self.plot_buildings_button.pack(side=tk.LEFT, padx=5, pady=5)
         self.button_list.append(self.plot_buildings_button)
 
+        # Power
+        self.plot_powers_button = ttk.Button(self.master, text="Power", command=lambda: plot_powers(self.root))
+        self.plot_powers_button.pack(side=tk.LEFT, padx=5, pady=5)
+        self.button_list.append(self.plot_powers_button)
+
     def enable_all_buttons(self):
         for bt in self.button_list:
             bt.config(state=tk.NORMAL)
