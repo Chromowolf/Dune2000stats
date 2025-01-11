@@ -2,7 +2,7 @@ import pickle
 from tkinter import filedialog, messagebox
 from datetime import datetime
 from gamedata.gamevars import game_vars as gv
-
+import gzip
 import os
 
 folder_name = "stats"
@@ -27,8 +27,9 @@ def dump_game_data(class_instance, path=None):
 
     try:
         # Save the instance to a file
-        with open(file_path, 'wb') as output:
-            pickle.dump(class_instance, output, pickle.HIGHEST_PROTOCOL)
+        # with open(file_path, 'wb') as output:
+        with gzip.open(file_path, 'wb') as f:
+            pickle.dump(class_instance, f, pickle.HIGHEST_PROTOCOL)
         print(f"[Info] Game stats dumped into \"{file_path}\"")
     except IOError as e:
         print(f"[Error] Failed to write to file {file_path}: {e}")
@@ -54,6 +55,51 @@ def export_stats():
             messagebox.showerror("Error", f"An error occurred: {str(e)}")
 
 
+def load_pickle(filepath):
+    """Loads a pickle file, automatically detecting if it's gzipped or not.
+
+    Args:
+        filepath: The path to the pickle file.
+
+    Returns:
+        The unpickled object.
+
+    Raises:
+        FileNotFoundError: If the file does not exist.
+        pickle.UnpicklingError: If the file is not a valid pickle file.
+        Exception: For other errors during file reading or decompression.
+    """
+
+    # Check if the file exists
+    if not os.path.exists(filepath):
+        raise FileNotFoundError(f"File not found: {filepath}")
+
+    # 1. Check file extension first (quick check)
+    if filepath.endswith('.gz'):
+        is_gzipped = True
+    else:
+        # 2. Check magic number (more reliable)
+        try:
+            with open(filepath, 'rb') as f:
+                magic_number = f.read(2)
+                is_gzipped = magic_number == b'\x1f\x8b'
+        except Exception as e:
+            raise Exception(f"Error reading file: {e}")
+
+    # Load the pickle based on the detected type
+    try:
+        if is_gzipped:
+            with gzip.open(filepath, 'rb') as f:
+                return pickle.load(f)
+        else:
+            with open(filepath, 'rb') as f:
+                return pickle.load(f)
+    except pickle.UnpicklingError:
+        raise pickle.UnpicklingError("Not a valid pickle file (corrupted or incorrect format).")
+    except Exception as e:
+        raise Exception(f"Error loading pickle file: {e}")
+
+
 def import_stats(main_ui):
     """Handles the import of game stats from a .pkl file and updates the global 'gv'."""
     file_path = filedialog.askopenfilename(
@@ -64,8 +110,7 @@ def import_stats(main_ui):
     if file_path:
         try:
             # Load the pickle file
-            with open(file_path, 'rb') as f:
-                loaded_data = pickle.load(f)
+            loaded_data = load_pickle(file_path)
 
             # Ensure the loaded data is an instance of GameVariable
             if isinstance(loaded_data, type(gv)):
