@@ -25,7 +25,7 @@ def update_buildings_owned():
 
     # Current existing
     gv.building_groups_count = np.stack([
-        read_array(BUILDING_GROUPS_COUNT + PLAYER_DATA_LENGTH * i, ctypes.c_uint8, NUM_BUILDING_GROUPS) for i in range(8)
+        read_array(BUILDINGS_EXIST_PER_GROUP + PLAYER_DATA_LENGTH * i, ctypes.c_uint8, NUM_BUILDING_GROUPS) for i in range(8)
     ])
 
 def update_units_owned():

@@ -9,6 +9,25 @@ class GameVariable:
         # (2) vars initialized/refreshed/reset when game starts
         self._initialize_attributes()
 
+        # Data that must be stored every time, appended to list:
+        #
+        # gGameticks: int 0x5173F4
+        # elapsed_real_sec: float (computed)
+        # spice: int32[8] 0x7BCAC4 (+0x24254)
+        # cash: int32[8] 0x7BCACC (+0x2425C)
+        # credits: int32[8] (spice+cash)
+        # spice_harvested: int32[8] 0x7BCFEC (+0x2477C)
+        # power_output: uint32[8] 0x7BCE18 (+0x245A8)
+        # power_drained: uint32[8] 0x7BCE1C (+0x245AC)
+        # total_orders_received: int32[8] 0x6B91F8+0x20
+        # buildings_owned: int32[8][62] 0x7BD0E8 (+0x24878) -> can be stored as csr matrix, but too lazy
+        # building_groups_count: u8[8][24] 0x7BCE31 (+0x245C1) -> can be stored as csr matrix, but too lazy
+        # buildings_killed_detail: int[8][62][8] 0x7BDC88 (+0x25418) -> can be stored as csr matrix, but too lazy
+        # units_owned: int32[8][30] UNITS_OWNED_TABLE_CNC or UNITS_OWNED_TABLE -> can be stored as csr matrix, but too lazy
+        # units_count: int32[8][30] 0x7BCE98 (+0x24628) -> can be stored as csr matrix, but too lazy
+        # units_killed_detail: int32[8][30][8] 0x7BD508 (+0x24C98) -> can be stored as csr matrix, but too lazy
+        # units_lost: int32[8][30] 0x7BD280 (+0x24A10) -> can be stored as csr matrix, but too lazy
+
     def update_from_instance(self, other_instance):
         """Update the current instance's attributes from another GameVariable instance."""
         self._initialize_attributes()
@@ -143,10 +162,10 @@ class GameVariable:
         self.unit_build_time_ticks_handicap1 = np.zeros(NUM_UNITS, dtype=np.int32)  # initialized once
 
         # Buildings stats
-        self.buildings_owned = np.zeros((8, NUM_BUILDINGS), dtype=np.int32)  # 8 players, 62 types of buildings
-        self.building_groups_count = np.zeros((8, NUM_BUILDING_GROUPS), dtype=np.uint8)  # 8 players, 24 building groups. Buildings currently owned. Used for plotting
+        self.buildings_owned = np.zeros((8, NUM_BUILDINGS), dtype=np.int32)  # 0x7BD0E8 (+0x24878). 8 players, 62 types of buildings.
+        self.building_groups_count = np.zeros((8, NUM_BUILDING_GROUPS), dtype=np.uint8)  # 0x7BCE31 (+0x245C1). 8 players, 24 building groups. Buildings currently owned. Used for plotting
         self.buildings_lost = np.zeros((8, NUM_BUILDINGS), dtype=np.int32)  # 8 players, 62 types of buildings. No direct memory address, must be calculated using buildings_killed_detail
-        self.buildings_killed_detail = np.zeros((8, NUM_BUILDINGS, 8), dtype=np.int32)  # 8 players, 62 types of buildings, 8 p
+        self.buildings_killed_detail = np.zeros((8, NUM_BUILDINGS, 8), dtype=np.int32)  # 0x7BDC88 (+0x25418). 8 players, 62 types of buildings, 8 p
         self.buildings_killed = np.zeros((8, NUM_BUILDINGS), dtype=np.int32)  # 8 players, 62 types of buildings
 
         # Units stats
@@ -154,10 +173,10 @@ class GameVariable:
         self.units_owned_at_start = np.zeros((8, NUM_UNITS), dtype=np.int32)  # initialized once when game tick > 0
         self.starting_units_excluding_mvc = np.zeros((8, NUM_UNITS), dtype=np.int32)  # initialized once when game tick > 0, together with units_owned_at_start, used to calculate cncnet effi
 
-        self.units_count = np.zeros((8, NUM_UNITS), dtype=np.int32)  # 8 players, 30 types of units. Units currently owned. Used for plotting
+        self.units_count = np.zeros((8, NUM_UNITS), dtype=np.int32)  # 0x7BCE98 (+0x24628). 8 players, 30 types of units. Units currently owned. Used for plotting
 
         self.units_lost = np.zeros((8, NUM_UNITS), dtype=np.int32)  # 8 players, 30 types of units
-        self.units_killed_detail = np.zeros((8, NUM_UNITS, 8), dtype=np.int32)  # 8 players, 30 types of units, 8 p
+        self.units_killed_detail = np.zeros((8, NUM_UNITS, 8), dtype=np.int32)  # 0x7BD508 (+0x24C98). 8 players, 30 types of units, 8 p
         self.units_killed = np.zeros((8, NUM_UNITS), dtype=np.int32)  # 8 players, 30 types of units
 
         self.refineries_owned = np.zeros(8, dtype=np.int32)  # Updated when _update_buildings_owned() is called
@@ -249,16 +268,32 @@ class GameVariable:
         self.weighted_sum_gameticks_excluding_ref_handicap1 = np.zeros(8)  # / gameticks = total_effi_excluding_ref_handicap1
         self.weighted_sum_gameticks_including_ref_handicap1 = np.zeros(8)  # / gameticks = total_effi_including_ref_handicap1
 
+        self.spice_list = []
+        self.cash_list = []
+        self.spice_harvested_list = []
+
+        self.power_output_list = []
+        self.power_drained_list = []
+        self.total_orders_received_list = []
+
         self.weighted_sum_gameticks_excluding_ref_handicap1_list = []  # list version, appended every second
         self.weighted_sum_gameticks_including_ref_handicap1_list = []  # list version, appended every second
         self.game_ticks_list = []  # list of game ticks, appended every second
         self.elapsed_real_sec_list = []  # list of game ticks, appended every second
 
-        self.harvester_count_list = []  # list of current harvesters owned
+        self.harvester_count_list = []  # list of current harvesters owned  # Unused
         self.credits_list = []  # list of credits
 
         self.units_count_list = []  # list of currentlu owned units, (8, NUM_UNITS)
         self.building_groups_count_list = []  # list of currentlu owned building groups, (8, NUM_BUILDING_GROUPS)
+
+        self.buildings_killed_detail_list = []
+        self.units_killed_detail_list = []
+
+        self.buildings_owned_list = []
+        self.units_owned_list = []
+
+        self.units_lost_list = []
 
         # Delicated production weighted sums, list of np.array of length 8, each element being the weighted sum of production time
         # self.total_prod_gameticks_delicated_excl_starport_list = []  # appended every second, with backward increment, in handicap 1
@@ -312,21 +347,23 @@ class GameVariable:
         self.having_3_barracks_ticks = [0] * 8
         self.having_3_light_ticks = [0] * 8
         self.having_3_heavy_ticks = [0] * 8
+        self.power_output = np.zeros(8, dtype=np.uint32)  # 0x7BCE18 (+0x245A8). 200 + CY + Windtrap
+        self.power_drained = np.zeros(8, dtype=np.uint32)  # 0x7BCE1C (+0x245AC). 200 + other loads
         self.low_power_ticks = [0] * 8
         self.low_power_time_actual = np.zeros(8, dtype=float)
 
-        self.spice = np.zeros(8, dtype=np.int32)  # credits = cash + spice
+        self.spice = np.zeros(8, dtype=np.int32)  # 0x7BCAC4 (+0x24254). credits = cash + spice
         self.spice_before_defeated = np.zeros(8, dtype=np.int32)  # credits_before_defeated = cash + spice_before_defeated
         self.spice_capacity = np.zeros(8, dtype=np.int32)
         self.spice_buffer = np.zeros(8, dtype=np.int32)
-        self.cash = np.zeros(8, dtype=np.int32)  # credits = cash + spice
-        self.spice_harvested = np.zeros(8, dtype=np.int32)
+        self.cash = np.zeros(8, dtype=np.int32)  # 0x7BCACC (+0x2425C). credits = cash + spice
+        self.spice_harvested = np.zeros(8, dtype=np.int32)  # 0x7BCFEC (+0x2477C)
 
-        self.last_spice = np.zeros(8, dtype=np.int32)
-        self.last_spice_harvested = np.zeros(8, dtype=np.int32)
-        self.last_spice_buffer = np.zeros(8, dtype=np.int32)
-        self.spice_wasted = [0] * 8
-        self.spice_wasted2 = [0] * 8  # a difference algorithm
+        self.last_spice = np.zeros(8, dtype=np.int32)  # unused
+        self.last_spice_harvested = np.zeros(8, dtype=np.int32)  # unused
+        self.last_spice_buffer = np.zeros(8, dtype=np.int32)  # unused
+        self.spice_wasted = [0] * 8  # unused
+        self.spice_wasted2 = [0] * 8  # a difference algorithm  # unused
 
         self.harvester_count_before_defeated = np.zeros(8, dtype=np.int32)  # Current harvesters owned, before defeated
         self.harvester_count = np.zeros(8, dtype=np.int32)  # Current harvesters owned
@@ -356,14 +393,29 @@ class GameVariable:
         """
         self.game_ticks_list.append(self.gGameTicks)
         self.elapsed_real_sec_list.append(self.elapsed_real_sec)
+
+        self.spice_list.append(self.spice.copy())  # Must append a copy, because harvester_count is modified in-place
+        self.cash_list.append(self.cash.copy())  # Must append a copy, because harvester_count is modified in-place
+        self.credits_list.append(self.spice + self.cash)  # Unnecesary, but legacy
+        self.spice_harvested_list.append(self.spice_harvested.copy())  # Must append a copy, because harvester_count is modified in-place
+
+        self.power_output_list.append(self.power_output.copy())
+        self.power_drained_list.append(self.power_drained.copy())
+        self.total_orders_received_list.append(self.total_orders_received.copy())
+
         self.weighted_sum_gameticks_excluding_ref_handicap1_list.append(self.weighted_sum_gameticks_excluding_ref_handicap1[:self.number_of_player])
         self.weighted_sum_gameticks_including_ref_handicap1_list.append(self.weighted_sum_gameticks_including_ref_handicap1[:self.number_of_player])
 
-        # self.harvester_count_list.append(self.harvester_count.copy())  # Must append a copy, because harvester_count is modified in-place
-        self.credits_list.append(self.spice + self.cash)
-
         self.units_count_list.append(self.units_count.copy())
         self.building_groups_count_list.append(self.building_groups_count.copy())
+
+        self.buildings_killed_detail_list.append(self.buildings_killed_detail.copy())
+        self.units_killed_detail_list.append(self.units_killed_detail.copy())
+
+        self.buildings_owned_list.append(self.buildings_owned.copy())
+        self.units_owned_list.append(self.units_owned.copy())
+
+        self.units_lost_list.append(self.units_lost.copy())
 
     def clear(self):
         self._initialize_attributes()

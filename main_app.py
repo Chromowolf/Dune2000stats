@@ -166,15 +166,15 @@ def exec_in_game():
 
             cur_pl_offset = PLAYER_DATA_LENGTH * p
             gv.barracks_owning[p] = global_handle.read_simple_data(
-                BUILDING_GROUPS_COUNT + cur_pl_offset + BARRACKS_BUILDING_GROUP_INDEX,
+                BUILDINGS_EXIST_PER_GROUP + cur_pl_offset + BARRACKS_BUILDING_GROUP_INDEX,
                 ctypes.c_uint8()
             )
             gv.lightfac_owning[p] = global_handle.read_simple_data(
-                BUILDING_GROUPS_COUNT + cur_pl_offset + LIGHT_FACTORY_BUILDING_GROUP_INDEX,
+                BUILDINGS_EXIST_PER_GROUP + cur_pl_offset + LIGHT_FACTORY_BUILDING_GROUP_INDEX,
                 ctypes.c_uint8()
             )
             gv.heavyfac_owning[p] = global_handle.read_simple_data(
-                BUILDING_GROUPS_COUNT + cur_pl_offset + HEAVY_FACTORY_BUILDING_GROUP_INDEX,
+                BUILDINGS_EXIST_PER_GROUP + cur_pl_offset + HEAVY_FACTORY_BUILDING_GROUP_INDEX,
                 ctypes.c_uint8()
             )
             if gv.barracks_owning[p] >= 3:
@@ -191,6 +191,8 @@ def exec_in_game():
             gv.cash[p] = global_handle.read_simple_data(0x7BCACC + cur_pl_offset, ctypes.c_int32())
             gv.spice_harvested[p] = global_handle.read_simple_data(0x7BCFEC + cur_pl_offset, ctypes.c_int32())
             gv.harvester_count[p] = global_handle.read_simple_data(0x7BCE28 + cur_pl_offset, ctypes.c_uint8())
+            gv.power_output[p] = global_handle.read_simple_data(0x7BCE18 + cur_pl_offset, ctypes.c_uint32())
+            gv.power_drained[p] = global_handle.read_simple_data(0x7BCE1C + cur_pl_offset, ctypes.c_uint32())
 
             if gv.gDeadOrder[p] == -1:  # player still in game, update the before-defeated stats
                 gv.spice_before_defeated[p] = gv.spice[p]

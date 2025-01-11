@@ -31,8 +31,8 @@ UNIT_TABLE_HEAD_POINTER_ADDR = 0x798878  # pointer (u32)
 BUILDING_TABLE_HEAD_POINTER_ADDR = 0x798880  # pointer (u32)
 
 # BUILDINGS_OWNING_TABLE = 0x7BCE30  # u8[104] for each player
-BUILDING_GROUPS_COUNT = 0x7BCE31  # u8[100] for each player
-UNITS_EXIST_PER_TYPE = 0x7BCE98  # int32[60] for each player
+BUILDINGS_EXIST_PER_GROUP = 0x7BCE31  # u8[100] for each player (current owned)
+UNITS_EXIST_PER_TYPE = 0x7BCE98  # int32[60] for each player (current owned)
 
 UNITS_OWNED_TABLE = 0x7BCFF8  # int32[60] for each player
 BUILDINGS_OWNED_TABLE = 0x7BD0E8  # int32[100] for each player
