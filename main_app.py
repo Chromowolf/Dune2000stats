@@ -139,6 +139,7 @@ def exec_in_game():
                 for teamable_pl_idx in player_set:
                     pl_idx = gv.dict_teamable_index_to_player_index[teamable_pl_idx]
                     gv.player_teams[pl_idx] = team_idx + 1
+                    gv.player_team_idx[pl_idx] = team_idx + 1
 
         # Player stats
         for p in range(gv.number_of_player):
@@ -433,13 +434,18 @@ def on_game_start():
         # Teams and non-spectator:
         if gv.is_spectator[p]:
             gv.player_teams[p] = "Spectator"
+            gv.player_team_idx[p] = TEAM_INDEX_SPECTATOR
             gv.victory_status[p] = VICTORY_STATUS_SPECTATING
         else:
             gv.victory_status[p] = VICTORY_STATUS_UNDETERMINED
             gv.dict_teamable_index_to_player_index[cur_team] = p
             cur_team += 1
             gv.player_teams[p] = cur_team
+            gv.player_team_idx[p] = cur_team
             gv.non_spectator_player_index += [p]
+
+    # Argsort player team idx
+    gv.player_index_by_teams = np.argsort(gv.player_team_idx)
 
     game_type_dict = {0: "Single Player", 1: "Skirmish", 2: "LAN", 3: "Serial", 4: "Modem", 5: "WOL"}
     game_type_str = game_type_dict.get(global_handle.read_simple_data(0x797E34, ctypes.c_int32()), "Unknown")

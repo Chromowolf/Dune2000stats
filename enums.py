@@ -59,3 +59,5 @@ color_idx_to_hex_string = {
     7: "#F4A460"
 }
 
+TEAM_INDEX_SPECTATOR = 9  # Team index of spectator player
+TEAM_INDEX_NONE = 10  # Team index of absent player slot

@@ -1,6 +1,7 @@
 # import numpy as np
 from .unitsdata import *
 from datetime import timedelta, datetime
+from enums import TEAM_INDEX_NONE
 
 class GameVariable:
     def __init__(self):
@@ -130,7 +131,10 @@ class GameVariable:
         self.player_handicaps = np.zeros(8, dtype=int)  # initialized once
         self.player_colors = [0] * 8  # initialized once
         self.player_sides = [0] * 8  # initialized once
-        self.player_teams = [0] * 8
+        self.player_teams = [0] * 8  # Old way of storing teams
+        self.player_team_idx = np.full(8, TEAM_INDEX_NONE, dtype=np.int8)  # New way. 1,2,3,4,5,6,7,8: teams. 9: spec, 10: not available / not in game
+        # if teams are [1, spec, 2, spec, 2, 1, None, None], then player_index_by_teams is [0, 5, 2, 4, 1, 3, 6, 7]
+        self.player_index_by_teams = np.array([0, 1, 2, 3, 4, 5, 6, 7], dtype=np.int8)  # argsort of player teams.
         self.non_spectator_player_index = []  # initialized once
         self.dict_teamable_index_to_player_index = {}  # initialized once
         self.num_teams = 8
