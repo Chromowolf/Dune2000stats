@@ -139,6 +139,12 @@ def update_production():
 
     # To be implemented: check unit_produced <= units_owned
     np.add.at(gv.units_produced, (unit_produced_increment_player_index, unit_produced_increment_unit_type), 1)
+    fremen_at = np.where(unit_produced_increment_unit_type == FREMEN_INDEX)[0]
+    if len(fremen_at) > 0:
+        np.add.at(gv.units_produced, (unit_produced_increment_player_index[fremen_at], FREMEN_INDEX), 1)  # Fremen are pairs
+    ornithopter_at = np.where(unit_produced_increment_unit_type == ORNITHOPTER_INDEX)[0]
+    if len(ornithopter_at) > 0:
+        np.add.at(gv.units_produced, (unit_produced_increment_player_index[ornithopter_at], ORNITHOPTER_INDEX), 2)  # ornithopters are tripples
 
     # Add to increment and append
     if len(unit_produced_increment_player_index) > 0:
