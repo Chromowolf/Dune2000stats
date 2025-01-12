@@ -31,6 +31,36 @@ unit_idx_to_name = {
     29: "MP Sardaukar"
 }
 
+unit_group_idx_to_name = {
+    0: "Light Infantry",
+    1: "Trooper",
+    2: "Engineer",
+    3: "Thumper",
+    4: "Sardaukar",
+    5: "Trike",
+    6: "Raider",
+    7: "Quad",
+    8: "Harvester",
+    9: "Combat Tank",
+    10: "MCV",
+    11: "Missile Tank",
+    12: "Deviator",
+    13: "Siege Tank",
+    14: "Sonic Tank",
+    15: "Devastator",
+    16: "Carryall",
+    17: "Ornithopter",
+    18: "Fremen",
+    19: "Non Stealth Fremen",  # NSFremen: Fremen
+    20: "Saboteur",
+    21: "Death Hand Missile",
+    22: "Sandworm",
+    23: "Frigate",
+    24: "Grenadier",
+    25: "Stealth Raider",
+}
+
+
 building_idx_to_name = {
     0: "Atreides Construction Yard",
     1: "Harkonnen Construction Yard",
@@ -42,9 +72,9 @@ building_idx_to_name = {
     7: "Ordos Test Concrete",
     8: "Harkonnen Test Concrete",
     9: "Ordos Test Concrete",
-    10: "Atreides Windrap",
-    11: "Harkonnen Windrap",
-    12: "Ordos Windrap",
+    10: "Atreides Wind Trap",
+    11: "Harkonnen Wind Trap",
+    12: "Ordos Wind Trap",
     13: "Atreides Barracks",
     14: "Harkonnen Barracks",
     15: "Ordos Barracks",
@@ -96,6 +126,33 @@ building_idx_to_name = {
     61: "Special Ordos Outpost",
 }
 
+building_group_idx_to_name = {
+    0: "Construction Yard",
+    1: "Concrete",
+    2: "Concrete2",  # Conc2: Concrete
+    3: "Wind Trap",
+    4: "Barracks",
+    5: "Sietch",
+    6: "Wall",
+    7: "Refinery",
+    8: "Gun Turret",  # Medium_Gun_Turret: Gun Turret
+    9: "Outpost",
+    10: "Rocket Turret",  # Large_Gun_Turret: Rocket Turret
+    11: "Atreides High Tech Factory",
+    12: "High Tech Factory",
+    13: "Light Factory",
+    14: "Silo",
+    15: "Heavy Factory",
+    16: "Starport",
+    17: "Repair Pad",
+    18: "Ix Research Center",
+    19: "Atreides Palace",
+    20: "Harkonnen Palace",
+    21: "Ordos Palace",
+    22: "Imperial Palace",
+    23: "Modified Outpost",
+}
+
 building_idx_to_name_short = {
     0: "CY",
     1: "CY",
@@ -107,9 +164,9 @@ building_idx_to_name_short = {
     7: "Concrt3x3",
     8: "Concrt3x3",
     9: "Concrt3x3",
-    10: "Windrap",
-    11: "Windrap",
-    12: "Windrap",
+    10: "Windtrap",
+    11: "Windtrap",
+    12: "Windtrap",
     13: "Barracks",
     14: "Barracks",
     15: "Barracks",
