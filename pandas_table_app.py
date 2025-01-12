@@ -235,14 +235,16 @@ class DetailsTable(PandasTableApp):
         """
         # print("DetailsTable get_data_table called!")
 
-        units_owned_clean = (
+        units_owned_clean = (  # Exluding: Choam Frigate, Carryall from ref
             gv.units_owned_at_start +
             gv.units_produced +
             gv.units_from_starport +
             gv.reinforcements_from_carryall +
             gv.harvs_from_ref
         )  # (8, NUM_UNITS)
-        units_owned_clean[:, 0] = gv.units_owned[:, 0]  # Overwrite light infantry
+        units_owned_clean[:, LIGHT_INFANTRY_INDEX] = gv.units_owned[:, LIGHT_INFANTRY_INDEX]  # Overwrite light infantry
+        units_owned_clean[:, CARRYALL2_INDEX] = gv.units_owned[:, CARRYALL2_INDEX]  # Overwrite Carryall2
+        units_owned_clean[:, CHOAM_FRIGATE_INDEX] = gv.units_owned[:, CHOAM_FRIGATE_INDEX]  # Overwrite Choam Frigate
 
         # debug
         # def print_array(arr):
@@ -269,28 +271,43 @@ class DetailsTable(PandasTableApp):
         #
         # print_array(gv.buildings_killed_detail)
 
-        df_data = [
-            ("Units Owned Count (Raw)", gv.units_owned.sum(axis=1)),
-            ("Units Owned Count (Clean)", units_owned_clean.sum(axis=1)),
-            ("Units Killed Count", gv.units_killed.sum(axis=1)),
-            ("Units Lost Count", gv.units_lost.sum(axis=1)),
-            ("Buildings Owned Count", gv.buildings_owned.sum(axis=1)),
-            ("Buildings Killed Count", gv.buildings_killed.sum(axis=1)),
-            ("Buildings Lost Count", gv.buildings_lost.sum(axis=1)),
+        # Use np stack to optimize performance.
 
-            ("Units Owned Score (Raw)", gv.units_owned @ gv.unit_cost_handicap1),
-            ("Units Owned Score (Clean)", units_owned_clean @ gv.unit_cost_handicap1),
-            ("Units Killed Score", gv.units_killed @ gv.unit_cost_handicap1),
-            ("Units Lost Score", gv.units_lost @ gv.unit_cost_handicap1),
-            ("Buildings Owned Score", gv.buildings_owned @ gv.building_cost_handicap1),
-            ("Buildings Killed Score", gv.buildings_killed @ gv.building_cost_handicap1),
-            ("Buildings Lost Score", gv.buildings_lost @ gv.building_cost_handicap1),
-        ]
+        df_data = np.stack([
+            gv.units_owned.sum(axis=1),  # Units Owned Count (Raw)
+            units_owned_clean.sum(axis=1),  # Units Owned Count (Clean)
+            gv.units_killed.sum(axis=1),  # Units Killed Count
+            gv.units_lost.sum(axis=1),  # Units Lost Count
+            gv.buildings_owned.sum(axis=1),  # Buildings Owned Count
+            gv.buildings_killed.sum(axis=1),  # Buildings Killed Count
+            gv.buildings_lost.sum(axis=1),  # Buildings Lost Count
+
+            gv.units_owned @ gv.unit_cost_handicap1,  # Units Owned Score (Raw)
+            units_owned_clean @ gv.unit_cost_handicap1,  # Units Owned Score (Clean)
+            gv.units_killed @ gv.unit_cost_handicap1,  # Units Killed Score
+            gv.units_lost @ gv.unit_cost_handicap1,  # Units Lost Score
+            gv.buildings_owned @ gv.building_cost_handicap1,  # Buildings Owned Score
+            gv.buildings_killed @ gv.building_cost_handicap1,  # Buildings Killed Score
+            gv.buildings_lost @ gv.building_cost_handicap1,  # Buildings Lost Score
+        ])[:, :gv.number_of_player]
 
         # Convert to DataFrame
-        df = pd.DataFrame.from_records(df_data, columns=["items", "data"]).set_index("items")
-        df = pd.DataFrame(df['data'].to_list(), index=df.index)
-        df.drop(df.columns[gv.number_of_player:], axis=1, inplace=True)
+        df = pd.DataFrame(df_data, index=[
+            "Units Owned Count (Raw)",
+            "Units Owned Count (Clean)",
+            "Units Killed Count",
+            "Units Lost Count",
+            "Buildings Owned Count",
+            "Buildings Killed Count",
+            "Buildings Lost Count",
+
+            "Units Owned Score (Raw)",
+            "Units Owned Score (Clean)",
+            "Units Killed Score",
+            "Units Lost Score",
+            "Buildings Owned Score",
+            "Buildings Killed Score",
+            "Buildings Lost Score",
+        ])
         df.columns = gv.player_names
-        df.index.name = None  # Remove the index name "items"
         return df
