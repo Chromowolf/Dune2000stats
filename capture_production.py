@@ -248,6 +248,18 @@ def update_production():
                     if gt > curpl_delivery_list[-1]:
                         curpl_delivery_list.append(gt)
 
+    # Update units_owned_clean
+    gv.units_owned_clean = (  # Exluding: Deviated units
+            gv.units_owned_at_start +
+            gv.units_produced +
+            gv.units_from_starport +
+            gv.reinforcements_from_carryall +
+            gv.harvs_from_ref
+    )  # (8, NUM_UNITS)
+    gv.units_owned_clean[:, LIGHT_INFANTRY_INDEX] = gv.units_owned[:, LIGHT_INFANTRY_INDEX]  # Overwrite light infantry
+    gv.units_owned_clean[:, CARRYALL2_INDEX] = gv.units_owned[:, CARRYALL2_INDEX]  # Overwrite Carryall2
+    gv.units_owned_clean[:, CHOAM_FRIGATE_INDEX] = gv.units_owned[:, CHOAM_FRIGATE_INDEX]  # Overwrite Choam Frigate
+
 def update_efficiencies():
     """
     No need to run every loop? Just need to be run when updating the stats table.

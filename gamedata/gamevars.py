@@ -30,6 +30,7 @@ class GameVariable:
         # units_count: int32[8][30] 0x7BCE98 (+0x24628) -> can be stored as csr matrix, but too lazy
         # units_killed_detail: int32[8][30][8] 0x7BD508 (+0x24C98) -> can be stored as csr matrix, but too lazy
         # units_lost: int32[8][30] 0x7BD280 (+0x24A10) -> can be stored as csr matrix, but too lazy
+        # units_owned_clean: int32[8][30] calculated.
 
     def update_from_instance(self, other_instance):
         """Update the current instance's attributes from another GameVariable instance."""
@@ -177,7 +178,8 @@ class GameVariable:
         self.buildings_killed = np.zeros((8, NUM_BUILDINGS), dtype=np.int32)  # 8 players, 62 types of buildings
 
         # Units stats
-        self.units_owned = np.zeros((8, NUM_UNITS), dtype=np.int32)  # 8 players, 30 types of units
+        self.units_owned_clean = np.zeros((8, NUM_UNITS), dtype=np.int32)  # 8 players, 30 types of units, Calculated
+        self.units_owned = np.zeros((8, NUM_UNITS), dtype=np.int32)  # 8 players, 30 types of units. UNITS_OWNED_TABLE_CNC or UNITS_OWNED_TABLE
         self.units_owned_at_start = np.zeros((8, NUM_UNITS), dtype=np.int32)  # initialized once when game tick > 0
         self.starting_units_excluding_mvc = np.zeros((8, NUM_UNITS), dtype=np.int32)  # initialized once when game tick > 0, together with units_owned_at_start, used to calculate cncnet effi
 
@@ -229,7 +231,7 @@ class GameVariable:
         # For index 0 (light infantry), the latter contains light infantries obtained from selling buildings
         # For index after 18, they might not match. For example: carryall2, choamfrigate, Ornithopter (x3), Fremen (x2)
 
-        # If no Ordos deviators, then (For units index 1 to 18):
+        # If no Ordos deviators, then (For units index 1 to 18): See units_owned_clean
         # units_owned = units_owned_at_start + units_produced + units_from_starport + reinforcements_from_carryall + harvs_from_ref
 
         # Buffers: list of tuples, where each tuple is (gameticks, numpy array of size (8, 30)), all integers, number of units
@@ -303,6 +305,7 @@ class GameVariable:
 
         self.buildings_owned_list = []
         self.units_owned_list = []
+        self.units_owned_clean_list = []
 
         self.units_lost_list = []
 
@@ -428,6 +431,7 @@ class GameVariable:
 
         self.buildings_owned_list.append(self.buildings_owned.copy())
         self.units_owned_list.append(self.units_owned.copy())
+        self.units_owned_clean_list.append(self.units_owned_clean.copy())
 
         self.units_lost_list.append(self.units_lost.copy())
 
