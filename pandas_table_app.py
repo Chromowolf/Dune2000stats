@@ -1,7 +1,13 @@
 # import tkinter as tk
 from tkinter import ttk
 from gamedata.gamevars import game_vars as gv
-from memrw import color_idx_to_name, side_idx_to_name, color_idx_to_hex_string
+from memrw import (
+    color_idx_to_name,
+    side_idx_to_name,
+    color_idx_to_hex_string,
+    unit_group_idx_to_name,
+    building_group_idx_to_name
+)
 # import numpy as np
 import pandas as pd
 from pandastable import Table
@@ -235,17 +241,6 @@ class DetailsTable(PandasTableApp):
         """
         # print("DetailsTable get_data_table called!")
 
-        units_owned_clean = (  # Exluding: Choam Frigate, Carryall from ref
-            gv.units_owned_at_start +
-            gv.units_produced +
-            gv.units_from_starport +
-            gv.reinforcements_from_carryall +
-            gv.harvs_from_ref
-        )  # (8, NUM_UNITS)
-        units_owned_clean[:, LIGHT_INFANTRY_INDEX] = gv.units_owned[:, LIGHT_INFANTRY_INDEX]  # Overwrite light infantry
-        units_owned_clean[:, CARRYALL2_INDEX] = gv.units_owned[:, CARRYALL2_INDEX]  # Overwrite Carryall2
-        units_owned_clean[:, CHOAM_FRIGATE_INDEX] = gv.units_owned[:, CHOAM_FRIGATE_INDEX]  # Overwrite Choam Frigate
-
         # debug
         # def print_array(arr):
         #     # Nested loop to print the array in a format similar to print(arr)
@@ -275,7 +270,7 @@ class DetailsTable(PandasTableApp):
 
         df_data = np.stack([
             gv.units_owned.sum(axis=1),  # Units Owned Count (Raw)
-            units_owned_clean.sum(axis=1),  # Units Owned Count (Clean)
+            gv.units_owned_clean.sum(axis=1),  # Units Owned Count (Clean)
             gv.units_killed.sum(axis=1),  # Units Killed Count
             gv.units_lost.sum(axis=1),  # Units Lost Count
             gv.buildings_owned.sum(axis=1),  # Buildings Owned Count
@@ -283,7 +278,7 @@ class DetailsTable(PandasTableApp):
             gv.buildings_lost.sum(axis=1),  # Buildings Lost Count
 
             gv.units_owned @ gv.unit_cost_handicap1,  # Units Owned Score (Raw)
-            units_owned_clean @ gv.unit_cost_handicap1,  # Units Owned Score (Clean)
+            gv.units_owned_clean @ gv.unit_cost_handicap1,  # Units Owned Score (Clean)
             gv.units_killed @ gv.unit_cost_handicap1,  # Units Killed Score
             gv.units_lost @ gv.unit_cost_handicap1,  # Units Lost Score
             gv.buildings_owned @ gv.building_cost_handicap1,  # Buildings Owned Score
@@ -309,5 +304,91 @@ class DetailsTable(PandasTableApp):
             "Buildings Killed Score",
             "Buildings Lost Score",
         ])
+        df.columns = gv.player_names
+        return df
+
+class UnitsOwnedCleanTable(PandasTableApp):
+    def set_cells_color(self):
+        # print("DetailsTable set_cells_color called!")
+        if gv.number_of_player < 2:  # Game failed to start
+            return
+
+        # Color stripe:
+        # for rw in [
+        #     "Buildings Owned Count",
+        #     "Buildings Killed Count",
+        #     "Buildings Lost Count",
+        #     "Buildings Owned Score",
+        #     "Buildings Killed Score",
+        #     "Buildings Lost Score",
+        # ]:
+        #     if rw in self.summary_df.index:
+        #         row_idx = self.summary_df.index.get_loc(rw)
+        #         self.table.setRowColors(rows=[row_idx], clr="#E0E0E0", cols="all")
+
+    def get_data_table(self):
+        """
+        :return: A pandas dataframe
+        """
+        units_groups_owned_clean = np.zeros((8, NUM_UNIT_GROUPS), dtype=np.int32)
+        np.add.at(
+            units_groups_owned_clean,
+            (slice(None), gv.unit_group_index),
+            gv.units_owned_clean
+        )
+
+        df = pd.DataFrame(
+            units_groups_owned_clean[:gv.number_of_player, :].T,
+            index=unit_group_idx_to_name.values()
+        )
+        df.columns = gv.player_names
+        return df
+
+
+class TotalOwnedTable(PandasTableApp):
+    def set_cells_color(self):
+        # print("DetailsTable set_cells_color called!")
+        if gv.number_of_player < 2:  # Game failed to start
+            return
+
+        # Color stripe:
+        # for rw in [
+        #     "Buildings Owned Count",
+        #     "Buildings Killed Count",
+        #     "Buildings Lost Count",
+        #     "Buildings Owned Score",
+        #     "Buildings Killed Score",
+        #     "Buildings Lost Score",
+        # ]:
+        #     if rw in self.summary_df.index:
+        #         row_idx = self.summary_df.index.get_loc(rw)
+        #         self.table.setRowColors(rows=[row_idx], clr="#E0E0E0", cols="all")
+
+    def get_data_table(self):
+        """
+        :return: A pandas dataframe
+        """
+        unit_groups_owned = np.zeros((8, NUM_UNIT_GROUPS), dtype=np.int32)
+        np.add.at(
+            unit_groups_owned,
+            (slice(None), gv.unit_group_index),
+            gv.units_owned
+        )
+
+        building_groups_owned = np.zeros((8, NUM_BUILDING_GROUPS), dtype=np.int32)
+        np.add.at(
+            building_groups_owned,
+            (slice(None), gv.building_group_index),
+            gv.buildings_owned
+        )
+
+        df_data = np.vstack((
+            unit_groups_owned[:gv.number_of_player, :].T,
+            building_groups_owned[:gv.number_of_player, :].T,
+        ))
+        df = pd.DataFrame(
+            df_data,
+            index=list(unit_group_idx_to_name.values()) + list(building_group_idx_to_name.values())
+        )
         df.columns = gv.player_names
         return df

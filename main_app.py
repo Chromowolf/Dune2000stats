@@ -25,7 +25,7 @@ import capture_production
 
 # import pandas as pd
 import numpy as np
-from pandas_table_app import SummaryTable, DetailsTable
+from pandas_table_app import SummaryTable, DetailsTable, UnitsOwnedCleanTable, TotalOwnedTable
 from buttons_right import RightButtons
 
 from find_cliques import find_maximal_cliques_with_pivot
@@ -753,6 +753,16 @@ class MainApp:
         self.main_stats_notebook.add(self.detailed_stats_frame, text="Other Details")
         self.app_detailed_stats = DetailsTable(self.detailed_stats_frame)  # The pandas table app
         self.all_pandas_tables.append(self.app_detailed_stats)
+
+        self.units_owned_clean_stats_frame = ttk.Frame(self.main_stats_notebook)
+        self.main_stats_notebook.add(self.units_owned_clean_stats_frame, text="Units Owned Clean")
+        self.app_units_owned_clean_stats = UnitsOwnedCleanTable(self.units_owned_clean_stats_frame)  # The pandas table app
+        self.all_pandas_tables.append(self.app_units_owned_clean_stats)
+
+        self.total_owned_stats_frame = ttk.Frame(self.main_stats_notebook)
+        self.main_stats_notebook.add(self.total_owned_stats_frame, text="Total Owned")
+        self.app_total_owned_stats = TotalOwnedTable(self.total_owned_stats_frame)  # The pandas table app
+        self.all_pandas_tables.append(self.app_total_owned_stats)
 
         # refresh_button = ttk.Button(master, text="Refresh", command=refresh_UI)
         # refresh_button.pack()
