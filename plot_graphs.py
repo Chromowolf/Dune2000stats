@@ -20,6 +20,33 @@ from gamedata.unitsdata import (
 )
 
 
+def diff_and_fill_np_1d(arr, period=1):
+    """
+    Rolling difference along axis 1 of a 2-d numpy array
+    :param arr: 2-d numpy array
+    :param period: values to shift
+    :return: The differenced array
+    """
+    result = arr.copy()
+
+    if period < arr.shape[0]:
+        result[period:] = arr[period:] - arr[:-period]
+    return result
+
+def diff_and_fill_np_2d(arr, period=1):
+    """
+    Rolling difference along axis 1 of a 2-d numpy array
+    :param arr: 2-d numpy array
+    :param period: values to shift
+    :return: The differenced array
+    """
+    result = arr.copy()
+
+    if period < arr.shape[1]:
+        result[:, period:] = arr[:, period:] - arr[:, :-period]
+    return result
+
+
 def create_ts_plot_at_frame(frame, x, y,
                             title=None, xlabel=None, ylabel=None,
                             stacked=False, proportion=False, colors=None, legend_labels=None, **kwargs):
@@ -187,7 +214,8 @@ class Plots:
             harv_data_2d = np.stack(harv_data_list, axis=1)[self.player_idx_to_plot, :]  # Stack arrays vertically
             # --- Create the first tab (Normal) ---
             create_ts_plot_at_frame(harv_frame_line, gv.game_ticks_list, harv_data_2d, stacked=False, proportion=False,
-                                    colors=self.colors, legend_labels=self.labels, title="Harvesters Currently Owned (Line Plot)")
+                                    colors=self.colors, legend_labels=self.labels,
+                                    title="Harvesters Currently Owned (Line Plot)")
 
             # --- Create the 2nd tab (Normal stacked) ---
             create_ts_plot_at_frame(harv_frame_stacked, gv.game_ticks_list, harv_data_2d, stacked=True,
@@ -469,7 +497,8 @@ class Plots:
 
             create_ts_plot_at_frame(power_percent_frame, gv.game_ticks_list, power_percent_2d, stacked=False,
                                     proportion=False,
-                                    colors=self.colors, legend_labels=self.labels, hline_y=100, title="Power Percent Over Time")
+                                    colors=self.colors, legend_labels=self.labels, hline_y=100,
+                                    title="Power Percent Over Time")
 
             create_ts_plot_at_frame(power_output_frame, gv.game_ticks_list, power_output_2d, stacked=False,
                                     proportion=False,
@@ -479,3 +508,47 @@ class Plots:
             create_ts_plot_at_frame(power_drained_frame, gv.game_ticks_list, power_drained_2d, stacked=False,
                                     proportion=False,
                                     colors=self.colors, legend_labels=self.labels, title="Power Drained Over Time")
+
+    def plot_apms(self, root):
+        plot_window = tk.Toplevel(root)
+        plot_window.title("APM Plot")
+        plot_window.geometry("1280x720")
+        if not hasattr(gv, "game_ticks_list") or not gv.game_ticks_list:
+            ttk.Label(plot_window, text="No game data!", style="yahei20.TLabel").pack()
+            return
+
+        # Create a Notebook (tabs)
+        notebook = ttk.Notebook(plot_window)
+        notebook.pack(expand=True, fill="both")
+        self.update_basics()
+
+        instant_apm_frame = ttk.Frame(notebook)
+        notebook.add(instant_apm_frame, text="Instant APM")
+
+        avg_apm_frame = ttk.Frame(notebook)
+        notebook.add(avg_apm_frame, text="Average APM")
+
+        if not hasattr(gv, "total_orders_received_list") or not gv.total_orders_received_list:
+            ttk.Label(instant_apm_frame, text="No instant APM data found!", style="yahei20.TLabel").pack()
+            ttk.Label(avg_apm_frame, text="No instant APM data found!", style="yahei20.TLabel").pack()
+        else:
+            total_actions_2d = np.stack(gv.total_orders_received_list, axis=1)[self.player_idx_to_plot, :]
+            elapsed_real_sec_arr = np.array(gv.elapsed_real_sec_list)
+
+            avg_apm_2d = np.divide(
+                total_actions_2d * 60, elapsed_real_sec_arr, where=(elapsed_real_sec_arr != 0),
+                out=np.full_like(total_actions_2d, 0, dtype=float)
+            )
+            create_ts_plot_at_frame(avg_apm_frame, gv.game_ticks_list, avg_apm_2d, stacked=False,
+                                    proportion=False,
+                                    colors=self.colors, legend_labels=self.labels, hline_y=60, title="Average APM Over Time")
+
+            total_actions_2d_roll_diff = diff_and_fill_np_2d(total_actions_2d, period=5)
+            elapsed_real_sec_roll_diff = diff_and_fill_np_1d(elapsed_real_sec_arr, period=5)
+            instant_apm_2d = np.divide(
+                total_actions_2d_roll_diff * 60, elapsed_real_sec_roll_diff, where=(elapsed_real_sec_roll_diff != 0),
+                out=np.full_like(total_actions_2d_roll_diff, 0, dtype=float)
+            )
+            create_ts_plot_at_frame(instant_apm_frame, gv.game_ticks_list, instant_apm_2d, stacked=False,
+                                    proportion=False,
+                                    colors=self.colors, legend_labels=self.labels, hline_y=60, title="Instant APM Over Time")

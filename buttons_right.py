@@ -33,6 +33,11 @@ class RightButtons:
         self.plot_powers_button.pack(side=tk.LEFT, padx=5, pady=5)
         self.button_list.append(self.plot_powers_button)
 
+        # APM
+        self.plot_apms_button = ttk.Button(self.master, text="APM", command=lambda: self.plots_instance.plot_apms(self.root))
+        self.plot_apms_button.pack(side=tk.LEFT, padx=5, pady=5)
+        self.button_list.append(self.plot_apms_button)
+
     def enable_all_buttons(self):
         for bt in self.button_list:
             bt.config(state=tk.NORMAL)
