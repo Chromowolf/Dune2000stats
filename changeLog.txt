@@ -1,3 +1,10 @@
+2025-01-14 [Big change]
+Added additional tabs to the main interface.
+Moved the game info string from the window title to within the UI frame.
+Added numerous new plots and updated plot titles for improved clarity.
+Enhanced the capability to store significantly more time series data.
+Used gzip compression to reduce the size of stats files.
+
 2025-01-05
 Added plot features.
 Fixed many bugs.
