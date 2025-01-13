@@ -158,7 +158,7 @@ class GameVariable:
 
         self.unit_cost = np.zeros(NUM_UNITS, dtype=np.int32)  # initialized once
         self.unit_build_speed = np.zeros(NUM_UNITS, dtype=np.int32)  # initialized once
-        self.unit_group_index = np.zeros(NUM_UNITS, dtype=np.uint8)  # initialized once, (0, ..., 23), 0x77E250, +0x01
+        self.unit_group_index = np.zeros(NUM_UNITS, dtype=np.uint8)  # initialized once, (0, ..., 25), 0x77E250, +0x01
 
         self.unit_progress_per_tick = np.zeros((8, NUM_UNITS), dtype=np.int32)  # initialized once
         self.unit_build_time_ticks_actual = np.zeros((8, NUM_UNITS), dtype=np.int32)  # initialized once
