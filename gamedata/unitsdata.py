@@ -1,6 +1,7 @@
 import numpy as np
 
 NUM_UNITS = 30  # Max: 60
+NUM_UNIT_GROUPS = 26  # Max: 60?
 NUM_BUILDINGS = 62  # Max: 100
 NUM_BUILDING_GROUPS = 24  # Max: 100
 
