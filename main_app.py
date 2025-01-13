@@ -25,7 +25,14 @@ import capture_production
 
 # import pandas as pd
 import numpy as np
-from pandas_table_app import SummaryTable, DetailsTable, UnitsOwnedCleanTable, TotalOwnedTable
+from pandas_table_app import (
+    SummaryTable,
+    DetailsTable,
+    UnitsOwnedCleanTable,
+    TotalOwnedTable,
+    TotalKilledTable,
+    TotalLostTable,
+)
 from buttons_right import RightButtons
 
 from find_cliques import find_maximal_cliques_with_pivot
@@ -763,6 +770,16 @@ class MainApp:
         self.main_stats_notebook.add(self.total_owned_stats_frame, text="Total Owned")
         self.app_total_owned_stats = TotalOwnedTable(self.total_owned_stats_frame)  # The pandas table app
         self.all_pandas_tables.append(self.app_total_owned_stats)
+
+        self.total_killed_stats_frame = ttk.Frame(self.main_stats_notebook)
+        self.main_stats_notebook.add(self.total_killed_stats_frame, text="Total Killed")
+        self.app_total_killed_stats = TotalKilledTable(self.total_killed_stats_frame)  # The pandas table app
+        self.all_pandas_tables.append(self.app_total_killed_stats)
+
+        self.total_lost_stats_frame = ttk.Frame(self.main_stats_notebook)
+        self.main_stats_notebook.add(self.total_lost_stats_frame, text="Total Lost")
+        self.app_total_lost_stats = TotalLostTable(self.total_lost_stats_frame)  # The pandas table app
+        self.all_pandas_tables.append(self.app_total_lost_stats)
 
         # refresh_button = ttk.Button(master, text="Refresh", command=refresh_UI)
         # refresh_button.pack()

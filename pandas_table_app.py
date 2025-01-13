@@ -17,6 +17,20 @@ from gamedata.unitsdata import *
 
 # from datetime import timedelta
 
+def get_groups_stats(values_array, indices_array, num_groups: int):
+    """
+    :param values_array: 2-d array
+    :param indices_array: 1-d array
+    :param num_groups: int
+    :return:
+    """
+    groups_stats = np.zeros((8, num_groups), dtype=np.int32)
+    np.add.at(
+        groups_stats,
+        (slice(None), indices_array),
+        values_array
+    )
+    return groups_stats
 
 class PandasTableApp:
     def __init__(self, master: ttk.Frame):
@@ -309,36 +323,15 @@ class DetailsTable(PandasTableApp):
 
 class UnitsOwnedCleanTable(PandasTableApp):
     def set_cells_color(self):
-        # print("DetailsTable set_cells_color called!")
         if gv.number_of_player < 2:  # Game failed to start
             return
-
-        # Color stripe:
-        # for rw in [
-        #     "Buildings Owned Count",
-        #     "Buildings Killed Count",
-        #     "Buildings Lost Count",
-        #     "Buildings Owned Score",
-        #     "Buildings Killed Score",
-        #     "Buildings Lost Score",
-        # ]:
-        #     if rw in self.summary_df.index:
-        #         row_idx = self.summary_df.index.get_loc(rw)
-        #         self.table.setRowColors(rows=[row_idx], clr="#E0E0E0", cols="all")
 
     def get_data_table(self):
         """
         :return: A pandas dataframe
         """
-        units_groups_owned_clean = np.zeros((8, NUM_UNIT_GROUPS), dtype=np.int32)
-        np.add.at(
-            units_groups_owned_clean,
-            (slice(None), gv.unit_group_index),
-            gv.units_owned_clean
-        )
-
         df = pd.DataFrame(
-            units_groups_owned_clean[:gv.number_of_player, :].T,
+            get_groups_stats(gv.units_owned_clean, gv.unit_group_index, NUM_UNIT_GROUPS)[:gv.number_of_player, :].T,
             index=unit_group_idx_to_name.values()
         )
         df.columns = gv.player_names
@@ -347,44 +340,58 @@ class UnitsOwnedCleanTable(PandasTableApp):
 
 class TotalOwnedTable(PandasTableApp):
     def set_cells_color(self):
-        # print("DetailsTable set_cells_color called!")
         if gv.number_of_player < 2:  # Game failed to start
             return
-
-        # Color stripe:
-        # for rw in [
-        #     "Buildings Owned Count",
-        #     "Buildings Killed Count",
-        #     "Buildings Lost Count",
-        #     "Buildings Owned Score",
-        #     "Buildings Killed Score",
-        #     "Buildings Lost Score",
-        # ]:
-        #     if rw in self.summary_df.index:
-        #         row_idx = self.summary_df.index.get_loc(rw)
-        #         self.table.setRowColors(rows=[row_idx], clr="#E0E0E0", cols="all")
 
     def get_data_table(self):
         """
         :return: A pandas dataframe
         """
-        unit_groups_owned = np.zeros((8, NUM_UNIT_GROUPS), dtype=np.int32)
-        np.add.at(
-            unit_groups_owned,
-            (slice(None), gv.unit_group_index),
-            gv.units_owned
-        )
-
-        building_groups_owned = np.zeros((8, NUM_BUILDING_GROUPS), dtype=np.int32)
-        np.add.at(
-            building_groups_owned,
-            (slice(None), gv.building_group_index),
-            gv.buildings_owned
-        )
-
         df_data = np.vstack((
-            unit_groups_owned[:gv.number_of_player, :].T,
-            building_groups_owned[:gv.number_of_player, :].T,
+            get_groups_stats(gv.units_owned, gv.unit_group_index, NUM_UNIT_GROUPS)[:gv.number_of_player, :].T,
+            get_groups_stats(gv.buildings_owned, gv.building_group_index, NUM_BUILDING_GROUPS)[:gv.number_of_player, :].T,
+        ))
+        df = pd.DataFrame(
+            df_data,
+            index=list(unit_group_idx_to_name.values()) + list(building_group_idx_to_name.values())
+        )
+        df.columns = gv.player_names
+        return df
+
+
+class TotalKilledTable(PandasTableApp):
+    def set_cells_color(self):
+        if gv.number_of_player < 2:  # Game failed to start
+            return
+
+    def get_data_table(self):
+        """
+        :return: A pandas dataframe
+        """
+        df_data = np.vstack((
+            get_groups_stats(gv.units_killed, gv.unit_group_index, NUM_UNIT_GROUPS)[:gv.number_of_player, :].T,
+            get_groups_stats(gv.buildings_killed, gv.building_group_index, NUM_BUILDING_GROUPS)[:gv.number_of_player, :].T,
+        ))
+        df = pd.DataFrame(
+            df_data,
+            index=list(unit_group_idx_to_name.values()) + list(building_group_idx_to_name.values())
+        )
+        df.columns = gv.player_names
+        return df
+
+
+class TotalLostTable(PandasTableApp):
+    def set_cells_color(self):
+        if gv.number_of_player < 2:  # Game failed to start
+            return
+
+    def get_data_table(self):
+        """
+        :return: A pandas dataframe
+        """
+        df_data = np.vstack((
+            get_groups_stats(gv.units_lost, gv.unit_group_index, NUM_UNIT_GROUPS)[:gv.number_of_player, :].T,
+            get_groups_stats(gv.buildings_lost, gv.building_group_index, NUM_BUILDING_GROUPS)[:gv.number_of_player, :].T,
         ))
         df = pd.DataFrame(
             df_data,
