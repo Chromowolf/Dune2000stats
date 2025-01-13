@@ -138,7 +138,7 @@ building_group_idx_to_name = {
     8: "Gun Turret",  # Medium_Gun_Turret: Gun Turret
     9: "Outpost",
     10: "Rocket Turret",  # Large_Gun_Turret: Rocket Turret
-    11: "Atreides High Tech Factory",
+    11: "Atr High Tech Factory",  # Should be Atreides High Tech Factory
     12: "High Tech Factory",
     13: "Light Factory",
     14: "Silo",
