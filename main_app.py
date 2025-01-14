@@ -148,6 +148,9 @@ def exec_in_game():
                     gv.player_teams[pl_idx] = team_idx + 1
                     gv.player_team_idx[pl_idx] = team_idx + 1
 
+            # Argsort player team idx
+            gv.player_index_by_teams = np.argsort(gv.player_team_idx)
+
         # Player stats
         for p in range(gv.number_of_player):
             # Update finishing place
@@ -450,9 +453,6 @@ def on_game_start():
             gv.player_teams[p] = cur_team
             gv.player_team_idx[p] = cur_team
             gv.non_spectator_player_index += [p]
-
-    # Argsort player team idx
-    gv.player_index_by_teams = np.argsort(gv.player_team_idx)
 
     game_type_dict = {0: "Single Player", 1: "Skirmish", 2: "LAN", 3: "Serial", 4: "Modem", 5: "WOL"}
     game_type_str = game_type_dict.get(global_handle.read_simple_data(0x797E34, ctypes.c_int32()), "Unknown")
