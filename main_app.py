@@ -700,6 +700,10 @@ def monitor_process():
 
 
 def update_stats():
+    """
+    Called every second (not every loop)
+    :return:
+    """
     capture_production.update_units_owned()
     capture_production.update_buildings_owned()
     capture_production.update_unit_scores()

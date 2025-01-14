@@ -50,9 +50,21 @@ def update_units_owned():
         read_array(UNITS_EXIST_PER_TYPE + PLAYER_DATA_LENGTH * i, ctypes.c_int32, NUM_UNITS) for i in range(8)
     ])
 
+    # Update units_owned_clean
+    gv.units_owned_clean = (  # Exluding: Deviated units
+            gv.units_owned_at_start +
+            gv.units_produced +
+            gv.units_from_starport +
+            gv.reinforcements_from_carryall +
+            gv.harvs_from_ref
+    )  # (8, NUM_UNITS)
+    gv.units_owned_clean[:, LIGHT_INFANTRY_INDEX] = gv.units_owned[:, LIGHT_INFANTRY_INDEX]  # Overwrite light infantry
+    gv.units_owned_clean[:, CARRYALL2_INDEX] = gv.units_owned[:, CARRYALL2_INDEX]  # Overwrite Carryall2
+    gv.units_owned_clean[:, CHOAM_FRIGATE_INDEX] = gv.units_owned[:, CHOAM_FRIGATE_INDEX]  # Overwrite Choam Frigate
+
 def update_production():
     """
-    Must be run in every loop.
+    Must be run in every loop. Guaranteed to be run before update_stats() which is called every second.
     :return: None
     """
     gv.build_unit_type = np.array([
@@ -248,18 +260,6 @@ def update_production():
                     if gt > curpl_delivery_list[-1]:
                         curpl_delivery_list.append(gt)
 
-    # Update units_owned_clean
-    gv.units_owned_clean = (  # Exluding: Deviated units
-            gv.units_owned_at_start +
-            gv.units_produced +
-            gv.units_from_starport +
-            gv.reinforcements_from_carryall +
-            gv.harvs_from_ref
-    )  # (8, NUM_UNITS)
-    gv.units_owned_clean[:, LIGHT_INFANTRY_INDEX] = gv.units_owned[:, LIGHT_INFANTRY_INDEX]  # Overwrite light infantry
-    gv.units_owned_clean[:, CARRYALL2_INDEX] = gv.units_owned[:, CARRYALL2_INDEX]  # Overwrite Carryall2
-    gv.units_owned_clean[:, CHOAM_FRIGATE_INDEX] = gv.units_owned[:, CHOAM_FRIGATE_INDEX]  # Overwrite Choam Frigate
-
 def update_efficiencies():
     """
     No need to run every loop? Just need to be run when updating the stats table.
@@ -360,10 +360,10 @@ def update_efficiencies():
     # 1.5 Total effi
     ###########################
     # Total effi
-    total_effi_units_excl_harv = gv.units_produced + gv.units_from_starport  # (8, 10)
+    total_effi_units_excl_harv = gv.units_produced + gv.units_from_starport  # (8, 30)
     total_effi_units_excl_harv[:, LIGHT_INFANTRY_INDEX] += light_infantries_from_selling  # Enable this line if starting units are excluded
     # total_effi_units_excl_harv[:, LIGHT_INFANTRY_INDEX] = gv.units_owned[:, LIGHT_INFANTRY_INDEX]  # Enable this line if starting units are included
-    total_effi_units_incl_harv = total_effi_units_excl_harv + gv.harvs_from_ref  # (8, 10)
+    total_effi_units_incl_harv = total_effi_units_excl_harv + gv.harvs_from_ref  # (8, 30)
 
     total_gametick_excl_harv = total_effi_units_excl_harv * gv.unit_build_time_ticks_actual  # (8, 30) array
     gv.total_effi_excluding_ref = total_gametick_excl_harv @ effi_unit_weights * 100 / gv.gGameTicks

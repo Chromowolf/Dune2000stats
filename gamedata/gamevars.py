@@ -205,7 +205,7 @@ class GameVariable:
         self.last_units_owned = np.zeros((8, NUM_UNITS), dtype=np.int32)  # 8 players, 30 types of units
 
         #######################
-        # Begin: Must be run in every loop!
+        # Begin: Must be updated every loop!
         ######################
         # Actual efficiency, tracking all build slots
         self.build_slot_progress = np.zeros((8, 10), dtype=np.int32)  # 8 players, 10 slots
@@ -244,7 +244,7 @@ class GameVariable:
             [], [], [], [], [], [], [], []
         ]  # list of list, each player's star port delivery game ticks list
         ######################
-        # End.
+        # End of [Must be updated every loop!]
         ######################
 
         ######################
