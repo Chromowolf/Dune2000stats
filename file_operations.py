@@ -111,7 +111,7 @@ def import_stats(main_ui):
         try:
             # Load the pickle file
             loaded_data = load_pickle(file_path)
-            print(f"[{datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}]: Game stats loaded from \"{file_path}\".")
+            print(f"[{datetime.now().strftime("%Y-%m-%d %H:%M:%S")}]: Game stats loaded from \"{file_path}\".")
 
             # Ensure the loaded data is an instance of GameVariable
             if isinstance(loaded_data, type(gv)):
