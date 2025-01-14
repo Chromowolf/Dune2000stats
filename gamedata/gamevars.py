@@ -225,7 +225,7 @@ class GameVariable:
         # (2) From starport delivery
         self.units_from_starport = np.zeros((8, NUM_UNITS), dtype=np.int32)  # starport purchase + reinforments
         # (3) From carryall delivery
-        self.reinforcements_from_carryall = np.zeros((8, NUM_UNITS), dtype=np.int32)  # Carryall reinforcement (excluding from ref)
+        self.reinforcements_from_carryall = np.zeros((8, NUM_UNITS), dtype=np.int32)  # Carryall reinforcement (excluding from ref), currently not implemented
         self.harvs_from_ref = np.zeros((8, NUM_UNITS), dtype=np.int32)  # Harvesters delivered when refineries are built
         # (1)+(2)+(3) should equal to units_owned - units_owned_at_start, at index [1:18].
         # For index 0 (light infantry), the latter contains light infantries obtained from selling buildings
@@ -276,7 +276,7 @@ class GameVariable:
 
         # Data lists used by plot
         self.weighted_sum_gameticks_excluding_ref_handicap1 = np.zeros(8)  # / gameticks = total_effi_excluding_ref_handicap1
-        self.weighted_sum_gameticks_including_ref_handicap1 = np.zeros(8)  # / gameticks = total_effi_including_ref_handicap1
+        self.weighted_sum_gameticks_including_ref_handicap1 = np.zeros(8)  # / gameticks = total_effi_including_ref_handicap1. Can be derived using units_owned_clean_list
 
         self.has_units_list = []
         self.has_buildings_list = []
@@ -290,7 +290,7 @@ class GameVariable:
         self.total_orders_received_list = []
 
         self.weighted_sum_gameticks_excluding_ref_handicap1_list = []  # list version, appended every second
-        self.weighted_sum_gameticks_including_ref_handicap1_list = []  # list version, appended every second
+        self.weighted_sum_gameticks_including_ref_handicap1_list = []  # list version, appended every second. Can be in derived using units_owned_clean_list
         self.game_ticks_list = []  # list of game ticks, appended every second
         self.elapsed_real_sec_list = []  # list of game ticks, appended every second
 
