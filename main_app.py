@@ -918,7 +918,7 @@ if __name__ == "__main__":
     s.configure('yahei10.TLabelframe.Label', font=("Microsoft YaHei", 10))
 
     # Configure the tab style (add padding around text)
-    s.configure("TNotebook.Tab", padding=[10, 0])
+    s.configure("TNotebook.Tab", padding=[3, 0])
 
     main_ui = MainApp(root)
 
