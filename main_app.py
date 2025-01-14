@@ -45,6 +45,9 @@ from file_operations import export_stats, import_stats, dump_game_data  # Import
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
 debug_mode = False
+version_list = [1, 0, 0]
+version_string = f"Version {version_list[0]}.{version_list[1]}{version_list[2]}"
+version_date_str = "2025-01-15"
 
 in_game = False
 in_game_prev = False  # if the game starts when last time we check
@@ -727,17 +730,19 @@ def refresh_UI():
 # Create a class so that other python files can access its attributes
 class MainApp:
     # Symbols: ┌ ┐ └ ┘ ┬ ┴ ├ ┤
-    # ┌---------------------------------┐
-    # | Main Frame (LabelFrame)         |
-    # |┌-------------------------------┐|
-    # || Notebook [Tab:Summary][Tab:..]||
-    # |├-------------------------------┤|
-    # || Button Frame                  ||
-    # ||┌--------------┬--------------┐||
-    # ||| Left buttons | Right buttons|||
-    # ||└--------------┴--------------┘||
-    # |└-------------------------------┘|
-    # └---------------------------------┘
+    # ┌-------------------------------------------------┐
+    # | Main Frame (LabelFrame)                         |
+    # |┌-----------------------------------------------┐|
+    # || Notebook [Tab:Summary][Tab:..]                ||
+    # ||                                               ||
+    # ||                                               ||
+    # |├-----------------------------------------------┤|
+    # || Button Frame                                  ||
+    # ||┌--------------┬---------------┬--------------┐||
+    # ||| Left buttons | Version Texts | Right buttons|||
+    # ||└--------------┴---------------┴--------------┘||
+    # |└-----------------------------------------------┘|
+    # └-------------------------------------------------┘
     def __init__(self, master):
         self.root = master
 
@@ -789,6 +794,13 @@ class MainApp:
 
         self.left_button_frame = ttk.Frame(self.button_frame)
         self.left_button_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+
+        self.version_text = ttk.Label(
+            self.button_frame,
+            text=f"{version_string} ({version_date_str})\nMade by Perennie",
+            style='yahei10blue.TLabel'
+        )
+        self.version_text.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
         self.right_button_frame = ttk.Frame(self.button_frame, borderwidth=1, relief=tk.SOLID)
         self.right_button_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
@@ -896,6 +908,7 @@ if __name__ == "__main__":
     s = ttk.Style()  # Create a ttk style object, to change the font of ttk.Button
     # Set the font size for the style. The name must end with ".TButton"
     s.configure('yahei20.TLabel', font=("Microsoft YaHei", 20))
+    s.configure('yahei10blue.TLabel', foreground='blue', font=("Microsoft YaHei", 10))
     # Configure the style for TLabelFrame.Label
     s.configure('yahei10.TLabelframe')
     s.configure('yahei10.TLabelframe.Label', font=("Microsoft YaHei", 10))
