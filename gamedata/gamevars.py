@@ -31,6 +31,7 @@ class GameVariable:
         # units_killed_detail: int32[8][30][8] 0x7BD508 (+0x24C98) -> can be stored as csr matrix, but too lazy
         # units_lost: int32[8][30] 0x7BD280 (+0x24A10) -> can be stored as csr matrix, but too lazy
         # units_owned_clean: int32[8][30] calculated.
+        # units_produced: int32[8][30] calculated.
 
     def update_from_instance(self, other_instance):
         """Update the current instance's attributes from another GameVariable instance."""
@@ -306,6 +307,7 @@ class GameVariable:
         self.buildings_owned_list = []
         self.units_owned_list = []
         self.units_owned_clean_list = []
+        self.units_produced_list = []
 
         self.units_lost_list = []
 
@@ -348,7 +350,6 @@ class GameVariable:
         self.building_expense_handicap1 = np.zeros(8, dtype=np.int32)
 
         # Manually calculate efficiency (tracking units produced)
-        self.units_produced = np.zeros((8, NUM_UNITS), dtype=np.int32)
         self.producing_slots_unit_type = np.zeros((8, 10), dtype=np.int32)
         self.producing_slots_unit_type = np.zeros((8, 10), dtype=np.int32)
 
@@ -432,6 +433,7 @@ class GameVariable:
         self.buildings_owned_list.append(self.buildings_owned.copy())
         self.units_owned_list.append(self.units_owned.copy())
         self.units_owned_clean_list.append(self.units_owned_clean.copy())
+        self.units_produced_list.append(self.units_produced.copy())
 
         self.units_lost_list.append(self.units_lost.copy())
 
