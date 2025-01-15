@@ -28,10 +28,20 @@ class RightButtons:
         self.plot_buildings_button.pack(side=tk.LEFT, padx=5, pady=5)
         self.button_list.append(self.plot_buildings_button)
 
+        # Kills
+        self.plot_kills_button = ttk.Button(self.master, text="Kills", command=lambda: self.plots_instance.plot_kills(self.root))
+        self.plot_kills_button.pack(side=tk.LEFT, padx=5, pady=5)
+        self.button_list.append(self.plot_kills_button)
+
         # Power
         self.plot_powers_button = ttk.Button(self.master, text="Power", command=lambda: self.plots_instance.plot_powers(self.root))
         self.plot_powers_button.pack(side=tk.LEFT, padx=5, pady=5)
         self.button_list.append(self.plot_powers_button)
+
+        # Efficiency
+        self.plot_efficiency_button = ttk.Button(self.master, text="Efficiency", command=lambda: self.plots_instance.plot_efficiency(self.root))
+        self.plot_efficiency_button.pack(side=tk.LEFT, padx=5, pady=5)
+        self.button_list.append(self.plot_efficiency_button)
 
         # APM
         self.plot_apms_button = ttk.Button(self.master, text="APM", command=lambda: self.plots_instance.plot_apms(self.root))

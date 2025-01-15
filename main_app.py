@@ -47,7 +47,7 @@ warnings.simplefilter(action='ignore', category=FutureWarning)
 debug_mode = False
 version_list = [1, 0, 0]
 version_string = f"Version {version_list[0]}.{version_list[1]}{version_list[2]}"
-version_date_str = "2025-01-15"
+version_date_str = "2025-01-16"
 
 in_game = False
 in_game_prev = False  # if the game starts when last time we check

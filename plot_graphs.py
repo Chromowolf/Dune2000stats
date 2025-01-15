@@ -17,8 +17,16 @@ from gamedata.unitsdata import (
     BARRACKS_BUILDING_GROUP_INDEX,
     LIGHT_FACTORY_BUILDING_GROUP_INDEX,
     HEAVY_FACTORY_BUILDING_GROUP_INDEX,
+    effi_unit_weights,
+    effi_infantry_index,
+    effi_light_index,
+    effi_heavy_index,
 )
 
+# debug
+def print_2d_array(arr):
+    for row in arr:
+        print(' '.join(map(str, row)))
 
 def diff_and_fill_np_1d(arr, period=1):
     """
@@ -36,7 +44,7 @@ def diff_and_fill_np_1d(arr, period=1):
 def diff_and_fill_np_2d(arr, period=1):
     """
     Rolling difference along axis 1 of a 2-d numpy array
-    :param arr: 2-d numpy array
+    :param arr: 2-d numpy array of shape (n_player, n_obs)
     :param period: values to shift
     :return: The differenced array
     """
@@ -49,20 +57,22 @@ def diff_and_fill_np_2d(arr, period=1):
 
 def create_ts_plot_at_frame(frame, x, y,
                             title=None, xlabel=None, ylabel=None,
-                            stacked=False, proportion=False, colors=None, legend_labels=None, **kwargs):
+                            stacked=False, proportion=False, colors=None, legend_labels=None, integer_yticks=True,
+                            **kwargs):
     """
     If proportion is True, then stacked is automatically true
     Args:
         frame: the tk frame
-        x:
-        y: 2d array
+        x: 1d array of shape (n_obs,)
+        y: 2d array of shape (n_player, n_obs), a horizontal matrix
         title: Custom title
         xlabel:
         ylabel:
-        stacked:
-        proportion:
+        stacked: Boolean
+        proportion: Boolean
         colors: iterable of length y.shape[0], specifying the color code
         legend_labels: iterable of length y.shape[0], specifying the legend texts
+        integer_yticks: whether to use only integer as Y ticks for the non-proportion plots
 
     Returns: Figure object
     """
@@ -81,6 +91,7 @@ def create_ts_plot_at_frame(frame, x, y,
         proportions = np.divide(y, row_sums, where=(row_sums != 0),
                                 out=np.full_like(y, 0, dtype=float))
         ax.stackplot(x, proportions, colors=colors, labels=legend_labels)  # Stack plot of proportion
+        ax.axhline(y=0.5, color='white', linestyle='--', alpha=0.8)
         ax.legend(loc='upper left')
         ax.set_xlabel("Time" if not xlabel else xlabel)
         ax.set_ylabel("Proportion" if not ylabel else ylabel)
@@ -94,7 +105,8 @@ def create_ts_plot_at_frame(frame, x, y,
             ax.set_xlabel("Time" if not xlabel else xlabel)
             ax.set_ylabel("Number" if not ylabel else ylabel)
             ax.set_title("Time Series Plot (Stacked)" if not title else title)
-            ax.yaxis.set_major_locator(MaxNLocator(integer=True))
+            if integer_yticks:
+                ax.yaxis.set_major_locator(MaxNLocator(integer=True))
         else:  # Line
             # ax.plot(x, y.T)  # Stack plot of proportion
             # ax.legend([f"Series{i}" for i in range(n_line)], loc='upper left')
@@ -104,7 +116,8 @@ def create_ts_plot_at_frame(frame, x, y,
             ax.set_xlabel("Time" if not xlabel else xlabel)
             ax.set_ylabel("Number" if not ylabel else ylabel)
             ax.set_title("Time Series Plot (Line)" if not title else title)
-            ax.yaxis.set_major_locator(MaxNLocator(integer=True))
+            if integer_yticks:
+                ax.yaxis.set_major_locator(MaxNLocator(integer=True))
 
     ax.grid(True)
     ax.set_xlim(left=kwargs.get('xlim_left', 0), right=kwargs.get('xlim_right'))
@@ -143,6 +156,7 @@ class Plots:
             # Old version, gv.player_team_idx not define
             self.player_idx_to_plot = np.where(self.is_real_player)[0]
         else:
+            # gv.player_index_by_teams = np.argsort(gv.player_team_idx)  # Debug
             self.player_idx_to_plot = gv.player_index_by_teams[:self.num_real_players]
         self.colors = [
             color_idx_to_hex_string.get(gv.player_colors[i], "#000000")
@@ -315,7 +329,7 @@ class Plots:
 
     def plot_buildings(self, root):
         plot_window = tk.Toplevel(root)
-        plot_window.title("Buildings Plot")
+        plot_window.title("Buildings Plots")
         plot_window.geometry("1280x720")
         if not hasattr(gv, "game_ticks_list") or not gv.game_ticks_list:
             ttk.Label(plot_window, text="No game data!", style="yahei20.TLabel").pack()
@@ -454,9 +468,57 @@ class Plots:
                                     colors=self.colors, legend_labels=self.labels,
                                     title="Heavy Factories Currently Owned Count (Line Plot)")
 
+    def plot_kills(self, root):
+        plot_window = tk.Toplevel(root)
+        plot_window.title("Kills Plots")
+        plot_window.geometry("1280x720")
+        if not hasattr(gv, "game_ticks_list") or not gv.game_ticks_list:
+            ttk.Label(plot_window, text="No game data!", style="yahei20.TLabel").pack()
+            return
+
+        # Create a Notebook (tabs)
+        notebook = ttk.Notebook(plot_window)
+        notebook.pack(expand=True, fill="both")
+        self.update_basics()
+
+        units_killed_count_frame= ttk.Frame(notebook)
+        notebook.add(units_killed_count_frame, text="Units Killed Count")
+
+        units_killed_value_frame= ttk.Frame(notebook)
+        notebook.add(units_killed_value_frame, text="Units Killed Score")
+
+        if not hasattr(gv, "units_killed_detail_list") or not gv.units_killed_detail_list:
+            ttk.Label(units_killed_count_frame, text="Units killed detail data not found!", style="yahei20.TLabel").pack()
+            ttk.Label(units_killed_value_frame, text="Units killed detail data not found!", style="yahei20.TLabel").pack()
+            return
+
+        units_killed_per_4d = np.stack(gv.units_killed_detail_list)  # (n, 8, NUM_UNITS, 8)
+        units_killed_3d = units_killed_per_4d.sum(axis=3)  # (n, 8, NUM_UNITS)
+
+        units_killed_cost_arr = gv.unit_cost_handicap1.astype(np.int64)  # shape (NUM_UNITS, ). astype auto creates a copy
+
+        units_killed_counts_2d = units_killed_3d.sum(axis=2)[:, self.player_idx_to_plot].T  # (n_player, n_obs)
+        units_killed_values_2d = (units_killed_3d @ units_killed_cost_arr)[:, self.player_idx_to_plot].T  # (n_player, n_obs)
+
+        create_ts_plot_at_frame(
+            units_killed_count_frame,
+            gv.game_ticks_list,
+            units_killed_counts_2d, stacked=False, proportion=False,
+            colors=self.colors, legend_labels=self.labels,
+            title="Cumulated Units Killed Count"
+        )
+
+        create_ts_plot_at_frame(
+            units_killed_value_frame,
+            gv.game_ticks_list,
+            units_killed_values_2d, stacked=False, proportion=False,
+            colors=self.colors, legend_labels=self.labels,
+            title="Values of Cumulated Units Killed"
+        )
+
     def plot_powers(self, root):
         plot_window = tk.Toplevel(root)
-        plot_window.title("Power Plot")
+        plot_window.title("Power Plots")
         plot_window.geometry("1280x720")
         if not hasattr(gv, "game_ticks_list") or not gv.game_ticks_list:
             ttk.Label(plot_window, text="No game data!", style="yahei20.TLabel").pack()
@@ -511,7 +573,7 @@ class Plots:
 
     def plot_apms(self, root):
         plot_window = tk.Toplevel(root)
-        plot_window.title("APM Plot")
+        plot_window.title("APM Plots")
         plot_window.geometry("1280x720")
         if not hasattr(gv, "game_ticks_list") or not gv.game_ticks_list:
             ttk.Label(plot_window, text="No game data!", style="yahei20.TLabel").pack()
@@ -532,7 +594,7 @@ class Plots:
             ttk.Label(instant_apm_frame, text="No instant APM data found!", style="yahei20.TLabel").pack()
             ttk.Label(avg_apm_frame, text="No instant APM data found!", style="yahei20.TLabel").pack()
         else:
-            total_actions_2d = np.stack(gv.total_orders_received_list, axis=1)[self.player_idx_to_plot, :]
+            total_actions_2d = np.stack(gv.total_orders_received_list, axis=1)[self.player_idx_to_plot, :]  # (n_player, n_obs)
             elapsed_real_sec_arr = np.array(gv.elapsed_real_sec_list)
 
             avg_apm_2d = np.divide(
@@ -543,12 +605,226 @@ class Plots:
                                     proportion=False,
                                     colors=self.colors, legend_labels=self.labels, hline_y=60, title="Average APM Over Time")
 
-            total_actions_2d_roll_diff = diff_and_fill_np_2d(total_actions_2d, period=5)
-            elapsed_real_sec_roll_diff = diff_and_fill_np_1d(elapsed_real_sec_arr, period=5)
+            total_actions_2d_roll_diff = diff_and_fill_np_2d(total_actions_2d, period=20)
+            elapsed_real_sec_roll_diff = diff_and_fill_np_1d(elapsed_real_sec_arr, period=20)
             instant_apm_2d = np.divide(
                 total_actions_2d_roll_diff * 60, elapsed_real_sec_roll_diff, where=(elapsed_real_sec_roll_diff != 0),
                 out=np.full_like(total_actions_2d_roll_diff, 0, dtype=float)
-            )
+            )  # (n_player, n_obs)
             create_ts_plot_at_frame(instant_apm_frame, gv.game_ticks_list, instant_apm_2d, stacked=False,
                                     proportion=False,
                                     colors=self.colors, legend_labels=self.labels, hline_y=60, title="Instant APM Over Time")
+
+    def plot_efficiency(self, root):
+        plot_window = tk.Toplevel(root)
+        plot_window.title("Efficiency Plots")
+        plot_window.geometry("1280x720")
+        if not hasattr(gv, "game_ticks_list") or not gv.game_ticks_list:
+            ttk.Label(plot_window, text="No game data!", style="yahei20.TLabel").pack()
+            return
+
+        # Create a Notebook (tabs)
+        notebook = ttk.Notebook(plot_window)
+        notebook.pack(expand=True, fill="both")
+        self.update_basics()
+
+        average_total_efficiency_frame = ttk.Frame(notebook)
+        notebook.add(average_total_efficiency_frame, text="Avg Total Effi")
+
+        cumulated_total_train_time_frame = ttk.Frame(notebook)
+        notebook.add(cumulated_total_train_time_frame, text="Cumu Train Time")
+
+        average_infantry_efficiency_frame = ttk.Frame(notebook)
+        notebook.add(average_infantry_efficiency_frame, text="Avg Infantry Effi")
+
+        average_light_efficiency_frame = ttk.Frame(notebook)
+        notebook.add(average_light_efficiency_frame, text="Avg Light Effi")
+
+        average_heavy_efficiency_frame = ttk.Frame(notebook)
+        notebook.add(average_heavy_efficiency_frame, text="Avg Heavy Effi")
+
+        instant_total_efficiency_frame = ttk.Frame(notebook)
+        notebook.add(instant_total_efficiency_frame, text="Instant Total Effi")
+
+        # Instant efficiency: not quite usefule
+        instant_infantry_efficiency_frame = ttk.Frame(notebook)
+        notebook.add(instant_infantry_efficiency_frame, text="Instant Infantry Effi")
+
+        instant_light_efficiency_frame = ttk.Frame(notebook)
+        notebook.add(instant_light_efficiency_frame, text="Instant Light Effi")
+
+        instant_heavy_efficiency_frame = ttk.Frame(notebook)
+        notebook.add(instant_heavy_efficiency_frame, text="Instant Heavy Effi")
+
+        # weighted_sum_from_gv_2d = np.stack(gv.weighted_sum_gameticks_including_ref_handicap1_list)  # (n, num_player)
+        # weighted_sum_gameticks_2d_trimmed = weighted_sum_gameticks_2d[:, :gv.number_of_player]  # (n, num_player)
+        #
+        # test_diff = weighted_sum_gameticks_2d_trimmed - weighted_sum_from_gv_2d
+        # print("test_diff:")
+        # print(f"All equal? {(test_diff == 0).all()}")
+        # print_2d_array(test_diff[:100, :])
+
+        # print("gv.units_owned_at_start:")
+        # print_2d_array(gv.units_owned_at_start)
+        #
+        # ttt = np.zeros((8, 30), dtype=np.int32)
+        # for i in range(4):
+        #     cur = units_owned_clean_3d[i, :, :]
+        #     print(f"Current game ticks: {gv.game_ticks_list[i]}")
+        #     print_2d_array(cur)
+        #     print(f"cur == last? {(ttt == cur).all()}")
+        #     ttt = cur.copy()
+        #     print("\n")
+
+        # print(weighted_sum_gameticks_2d[:, :gv.number_of_player] == weighted_sum_from_gv_2d)
+
+        if not hasattr(gv, "units_owned_clean_list") or not gv.units_owned_clean_list:
+            ttk.Label(instant_total_efficiency_frame, text="No efficiency data found!", style="yahei20.TLabel").pack()
+            ttk.Label(average_total_efficiency_frame, text="No efficiency data found!", style="yahei20.TLabel").pack()
+            ttk.Label(cumulated_total_train_time_frame, text="No efficiency data found!", style="yahei20.TLabel").pack()
+            ttk.Label(instant_infantry_efficiency_frame, text="No efficiency data found!", style="yahei20.TLabel").pack()
+            ttk.Label(instant_light_efficiency_frame, text="No efficiency data found!", style="yahei20.TLabel").pack()
+            ttk.Label(instant_heavy_efficiency_frame, text="No efficiency data found!", style="yahei20.TLabel").pack()
+            ttk.Label(average_infantry_efficiency_frame, text="No efficiency data found!", style="yahei20.TLabel").pack()
+            ttk.Label(average_light_efficiency_frame, text="No efficiency data found!", style="yahei20.TLabel").pack()
+            ttk.Label(average_heavy_efficiency_frame, text="No efficiency data found!", style="yahei20.TLabel").pack()
+            return
+
+        units_owned_clean_excl_start_3d = np.stack(gv.units_owned_clean_list) - gv.units_owned_at_start  # (n, 8, 30), need to exclude starting_units
+        total_gametick_per_player_per_unit_3d = units_owned_clean_excl_start_3d * gv.unit_build_time_ticks_handicap1  # (n, 8, 30) * (30, ) = (n, 8, 30)
+        weighted_sum_gameticks_2d = total_gametick_per_player_per_unit_3d @ effi_unit_weights  # (n, 8, 30) @ (30, ) = (n, 8), float
+        create_ts_plot_at_frame(
+            cumulated_total_train_time_frame, gv.game_ticks_list, weighted_sum_gameticks_2d[:, self.player_idx_to_plot].T, stacked=False,
+            proportion=False,
+            colors=self.colors, legend_labels=self.labels, title="Weighted Sum of Cumulated Units Owned Train Time (Total Efficiency = Y/X)"
+        )
+
+        game_tick_arr = np.stack(gv.game_ticks_list)
+        weighted_sum_gameticks_2d_horizontal = weighted_sum_gameticks_2d[:, self.player_idx_to_plot].T  # (n_player, n_obs)
+        avg_total_effi = np.divide(
+            weighted_sum_gameticks_2d_horizontal, game_tick_arr, where=(game_tick_arr != 0),
+            out=np.full_like(weighted_sum_gameticks_2d_horizontal, 0, dtype=float)
+        )
+        create_ts_plot_at_frame(
+            average_total_efficiency_frame, gv.game_ticks_list,
+            avg_total_effi, stacked=False,
+            proportion=False,
+            colors=self.colors, legend_labels=self.labels,
+            title="Total Efficiency Over Time",
+            integer_yticks=False
+        )
+
+        diff_period = 15
+        select_every = 20
+
+        weighted_sum_2d_roll_diff = diff_and_fill_np_2d(weighted_sum_gameticks_2d_horizontal, period=diff_period)  # (n_player, n_obs)
+        game_tick_roll_diff = diff_and_fill_np_1d(game_tick_arr, period=diff_period)  # (n_obs, )
+        instant_effi_2d = np.divide(
+            weighted_sum_2d_roll_diff, game_tick_roll_diff, where=(game_tick_roll_diff != 0),
+            out=np.full_like(weighted_sum_2d_roll_diff, 0, dtype=float)
+        )
+        create_ts_plot_at_frame(
+            instant_total_efficiency_frame, gv.game_ticks_list[::select_every],
+            instant_effi_2d[:, ::select_every], stacked=False,
+            proportion=False,
+            colors=self.colors, legend_labels=self.labels,
+            title="Instant Efficiency Over Time",
+            integer_yticks=False
+        )
+
+        if not hasattr(gv, "units_produced_list") or not gv.units_produced_list:
+            ttk.Label(instant_infantry_efficiency_frame, text="Units produced time series data not found!", style="yahei20.TLabel").pack()
+            ttk.Label(instant_light_efficiency_frame, text="Units produced time series data not found!", style="yahei20.TLabel").pack()
+            ttk.Label(instant_heavy_efficiency_frame, text="Units produced time series data not found!", style="yahei20.TLabel").pack()
+            ttk.Label(average_infantry_efficiency_frame, text="Units produced time series data not found!", style="yahei20.TLabel").pack()
+            ttk.Label(average_light_efficiency_frame, text="Units produced time series data not found!", style="yahei20.TLabel").pack()
+            ttk.Label(average_heavy_efficiency_frame, text="Units produced time series data not found!", style="yahei20.TLabel").pack()
+            return
+
+        # Efficient of barracks, light, and heavy:
+        units_produced_3d = np.stack(gv.units_produced_list)  # (n, 8, 30)
+        units_produced_time_cost_per_player_per_unit_3d = units_produced_3d * gv.unit_build_time_ticks_handicap1  # (n, 8, 30) * (30, ) = (n, 8, 30)
+        units_produced_time_cost_per_player_per_unit_3d = units_produced_time_cost_per_player_per_unit_3d[:, self.player_idx_to_plot, :]  # (n, n_player, 30)
+
+        infantry_produced_time_cost_2d = units_produced_time_cost_per_player_per_unit_3d[:, :, effi_infantry_index].sum(axis=2).T  # (n_player, n_obs)
+        light_produced_time_cost_2d = units_produced_time_cost_per_player_per_unit_3d[:, :, effi_light_index].sum(axis=2).T  # (n_player, n_obs)
+        heavy_produced_time_cost_2d = units_produced_time_cost_per_player_per_unit_3d[:, :, effi_heavy_index].sum(axis=2).T  # (n_player, n_obs)
+
+        avg_infantry_effi = np.divide(
+            infantry_produced_time_cost_2d, game_tick_arr, where=(game_tick_arr != 0),
+            out=np.full_like(infantry_produced_time_cost_2d, 0, dtype=float)
+        )
+        avg_light_effi = np.divide(
+            light_produced_time_cost_2d, game_tick_arr, where=(game_tick_arr != 0),
+            out=np.full_like(light_produced_time_cost_2d, 0, dtype=float)
+        )
+        avg_heavy_effi = np.divide(
+            heavy_produced_time_cost_2d, game_tick_arr, where=(game_tick_arr != 0),
+            out=np.full_like(heavy_produced_time_cost_2d, 0, dtype=float)
+        )
+        create_ts_plot_at_frame(
+            average_infantry_efficiency_frame, gv.game_ticks_list,
+            avg_infantry_effi, stacked=False,
+            proportion=False,
+            colors=self.colors, legend_labels=self.labels,
+            title="Average Infantry Production Efficiency Over Time",
+            integer_yticks=False
+        )
+        create_ts_plot_at_frame(
+            average_light_efficiency_frame, gv.game_ticks_list,
+            avg_light_effi, stacked=False,
+            proportion=False,
+            colors=self.colors, legend_labels=self.labels,
+            title="Average Light Factory Production Efficiency Over Time",
+            integer_yticks=False
+        )
+        create_ts_plot_at_frame(
+            average_heavy_efficiency_frame, gv.game_ticks_list,
+            avg_heavy_effi, stacked=False,
+            proportion=False,
+            colors=self.colors, legend_labels=self.labels,
+            title="Average Heavy Factory Production Efficiency Over Time",
+            integer_yticks=False
+        )
+
+        infantry_produced_time_cost_roll_diff = diff_and_fill_np_2d(infantry_produced_time_cost_2d, period=diff_period)  # (n_player, n_obs)
+        light_produced_time_cost_roll_diff = diff_and_fill_np_2d(light_produced_time_cost_2d, period=diff_period)  # (n_player, n_obs)
+        heavy_produced_time_cost_roll_diff = diff_and_fill_np_2d(heavy_produced_time_cost_2d, period=diff_period)  # (n_player, n_obs)
+
+        instant_infantry_effi_2d = np.divide(
+            infantry_produced_time_cost_roll_diff, game_tick_roll_diff, where=(game_tick_roll_diff != 0),
+            out=np.full_like(infantry_produced_time_cost_roll_diff, 0, dtype=float)
+        )
+        instant_light_effi_2d = np.divide(
+            light_produced_time_cost_roll_diff, game_tick_roll_diff, where=(game_tick_roll_diff != 0),
+            out=np.full_like(light_produced_time_cost_roll_diff, 0, dtype=float)
+        )
+        instant_heavy_effi_2d = np.divide(
+            heavy_produced_time_cost_roll_diff, game_tick_roll_diff, where=(game_tick_roll_diff != 0),
+            out=np.full_like(heavy_produced_time_cost_roll_diff, 0, dtype=float)
+        )
+
+        create_ts_plot_at_frame(
+            instant_infantry_efficiency_frame, gv.game_ticks_list[::select_every],
+            instant_infantry_effi_2d[:, ::select_every], stacked=False,
+            proportion=False,
+            colors=self.colors, legend_labels=self.labels,
+            title="Instant Infantry Production Efficiency Over Time",
+            integer_yticks=False
+        )
+        create_ts_plot_at_frame(
+            instant_light_efficiency_frame, gv.game_ticks_list[::select_every],
+            instant_light_effi_2d[:, ::select_every], stacked=False,
+            proportion=False,
+            colors=self.colors, legend_labels=self.labels,
+            title="Instant Light Factory Production Efficiency Over Time",
+            integer_yticks=False
+        )
+        create_ts_plot_at_frame(
+            instant_heavy_efficiency_frame, gv.game_ticks_list[::select_every],
+            instant_heavy_effi_2d[:, ::select_every], stacked=False,
+            proportion=False,
+            colors=self.colors, legend_labels=self.labels,
+            title="Instant Heavy Factory Production Efficiency Over Time",
+            integer_yticks=False
+        )
