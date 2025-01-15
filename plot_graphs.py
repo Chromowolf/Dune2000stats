@@ -481,10 +481,10 @@ class Plots:
         notebook.pack(expand=True, fill="both")
         self.update_basics()
 
-        units_killed_count_frame= ttk.Frame(notebook)
+        units_killed_count_frame = ttk.Frame(notebook)
         notebook.add(units_killed_count_frame, text="Units Killed Count")
 
-        units_killed_value_frame= ttk.Frame(notebook)
+        units_killed_value_frame = ttk.Frame(notebook)
         notebook.add(units_killed_value_frame, text="Units Killed Score")
 
         if not hasattr(gv, "units_killed_detail_list") or not gv.units_killed_detail_list:
