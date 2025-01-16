@@ -58,6 +58,7 @@ def diff_and_fill_np_2d(arr, period=1):
 def create_ts_plot_at_frame(frame, x, y,
                             title=None, xlabel=None, ylabel=None,
                             stacked=False, proportion=False, colors=None, legend_labels=None, integer_yticks=True,
+                            vline26250=True,
                             **kwargs):
     """
     If proportion is True, then stacked is automatically true
@@ -73,6 +74,7 @@ def create_ts_plot_at_frame(frame, x, y,
         colors: iterable of length y.shape[0], specifying the color code
         legend_labels: iterable of length y.shape[0], specifying the legend texts
         integer_yticks: whether to use only integer as Y ticks for the non-proportion plots
+        vline26250: whether to join the verticle line x=26250 (countdown timer)
 
     Returns: Figure object
     """
@@ -127,6 +129,8 @@ def create_ts_plot_at_frame(frame, x, y,
     if hline_y is not None:
         # noinspection all
         ax.axhline(y=hline_y, color='grey', linestyle='--', alpha=0.3)
+    if vline26250:
+        ax.axvline(x=26250, color='grey', linestyle='--', alpha=0.3)
 
     canvas = FigureCanvasTkAgg(fig, master=frame)
     canvas.draw()
