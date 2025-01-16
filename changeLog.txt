@@ -1,4 +1,8 @@
-2025-01-16
+2025-01-16 [v1.01] (hotfix)
+Fixed a severe memory leak caused by outdated packages: repeatedly opening and closing would lead to indefinite memory usage growth.
+Added a vertical line t=26250 (the time when countdown timer goes to 0) for all plots.
+
+2025-01-16 [v1.00]
 Fix the order of players in the plot (Sort by teams)
 Added efficiency and kills plot
 Got version number 1.00
