@@ -552,7 +552,8 @@ def on_game_end():
         # print(gv.heavy_gameticks_delicated_production)
 
     # Dump data to pickle:
-    dump_game_data(gv)
+    stats_timestamp = gv.game_start_timestamp if gv.game_start_timestamp else datetime.now()
+    dump_game_data(gv, f"game_stats_{stats_timestamp.strftime("%Y%m%d_%H%M%S")}.pkl")
     main_ui.import_button.config(state=tk.NORMAL)
     main_ui.right_button_instance.enable_all_buttons()
 
