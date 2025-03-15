@@ -1,13 +1,13 @@
 import pickle
 from tkinter import filedialog, messagebox
 from datetime import datetime
-from gamedata.gamevars import game_vars as gv
+from gamedata.gamevars import game_vars as gv, GameVariable
 import gzip
 import os
 
 folder_name = "stats"
 
-def dump_game_data(class_instance, path=None):
+def dump_game_data(class_instance: GameVariable, path=None):
     """
     Serializes a class instance and saves it to a file using pickle, overwriting any existing file without warning.
 
@@ -21,7 +21,8 @@ def dump_game_data(class_instance, path=None):
     """
     # Ensure the folder exists
     os.makedirs(folder_name, exist_ok=True)
-    file_path = os.path.join(folder_name, 'last_game.pkl')
+    stats_timestamp = class_instance.game_start_timestamp if class_instance.game_start_timestamp else datetime.now()
+    file_path = os.path.join(folder_name, f"game_stats_{stats_timestamp.strftime("%Y%m%d_%H%M%S")}.pkl")
     if path:
         file_path = path
 
