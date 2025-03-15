@@ -1,3 +1,6 @@
+2025-03-15 [v1.03]
+Auto save the stats of every game.
+
 2025-01-16 [v1.01] (hotfix)
 Fixed a severe memory leak caused by outdated packages: repeatedly opening and closing would lead to indefinite memory usage growth.
 Added a vertical line t=26250 (the time when countdown timer goes to 0) for all plots.
