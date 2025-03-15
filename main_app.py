@@ -364,8 +364,8 @@ def on_game_start():
     print(f"[Debug] SpawnerActive = {global_handle.read_simple_data(mem.SpawnerActive_ADDR, ctypes.c_bool())}")
     # print(f"{gv.map_width=}, {gv.map_height=}, {gv.game_width=}, {gv.game_height=}")
     print(f"Map name: {gv.map_name}")
-    # print(f"Map hash: {gv.gNetMap}")
-    # print(f"Map hash (cnc): {gv.gNetMap_cnc}")
+    print(f"Map file name: {gv.gNetMap}")
+    print(f"Map file name (cnc): {gv.gNetMap_cnc}")
 
     gv.player_names = []
     gv.number_of_AI = global_handle.read_simple_data(0x4E3B0C, ctypes.c_int32())
