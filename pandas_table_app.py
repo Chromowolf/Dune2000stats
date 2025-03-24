@@ -111,6 +111,13 @@ class SummaryTable(PandasTableApp):
             handicap3_players = list(np.where(gv.player_handicaps[:gv.number_of_player] > 1)[0])  # must convert to list
             self.table.setRowColors(rows=[handicap_row_index], clr="#E5CCFF", cols=handicap3_players)
 
+        # Highlight local player
+        for row_name in ["Side", "Team"]:
+            if row_name in self.summary_df.index:
+                color_row_index = self.summary_df.index.get_loc(row_name)
+                self.table.setRowColors(rows=[color_row_index], clr="#E0E0E0",
+                                        cols=[gv.me])
+
         if 'Colour' in self.summary_df.index:
             color_row_index = self.summary_df.index.get_loc("Colour")
             for p in range(gv.number_of_player):
@@ -189,7 +196,6 @@ class SummaryTable(PandasTableApp):
             # ("Player Numbers", gv.player_numbers),
             # ("Left Game At", gv.left_game_at),
             # ("Current Gameticks", gv.received_game_ticks),
-            # ("Total Freeze Seconds", gv.total_freeze_seconds.astype(int)),
 
             ("Harvester Count", gv.harvester_count_before_defeated),
             # ("Harvester Count", gv.harvester_count),
@@ -199,6 +205,7 @@ class SummaryTable(PandasTableApp):
             ("Refineries Owned", gv.refineries_owned),
             ("Starport Deliveries", gv.units_owned[:, 26]),
             ("Average OPM", [f"{pl_opm:.2f}" for pl_opm in avg_OPM]),
+            ("Total Freeze Seconds", gv.total_freeze_seconds.astype(int)),
 
             # ("Effi Building", [f"{pl_ef:.2f}%" for pl_ef in gv.building_efficiency]),
             ("Effi Building (handicap1)", [f"{pl_ef:.2f}%" for pl_ef in gv.building_efficiency_handicap1]),
