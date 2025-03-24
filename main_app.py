@@ -906,7 +906,7 @@ if __name__ == "__main__":
     #         print(f"Error setting executable icon: {e}")
 
     app_width = 1400
-    app_height = 820
+    app_height = 850
     root.geometry(f'{app_width}x{app_height}')
 
     s = ttk.Style()  # Create a ttk style object, to change the font of ttk.Button
