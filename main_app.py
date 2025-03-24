@@ -45,8 +45,8 @@ from file_operations import export_stats, import_stats, dump_game_data  # Import
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
 debug_mode = False
-version_list = [1, 0, 3]
-version_date_str = "2025-03-15"
+version_list = [1, 0, 4]
+version_date_str = "2025-03-24"
 version_string = f"Version {version_list[0]}.{version_list[1]}{version_list[2]}"
 
 in_game = False
