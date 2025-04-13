@@ -843,8 +843,12 @@ class MainApp:
 
     def set_title_after_game(self):
         game_end_state_str = game_end_state_dict.get(gv.game_end_state, "Unknown game end state")
+        game_start_time = gv.game_start_timestamp
+        if not isinstance(gv.game_start_timestamp, datetime):
+            print(f"Warning! gv.game_start_timestamp ({gv.game_start_timestamp}) is not a datetime object! Possible corrupted stats!")
+            game_start_time = datetime(1970, 1, 1)
         self.set_title(
-            f'[Started: {gv.game_start_timestamp.strftime('%Y-%m-%d %H:%M:%S')}] '
+            f'[Started: {game_start_time.strftime('%Y-%m-%d %H:%M:%S')}] '
             f'Elapsed time: {timedelta(seconds=gv.real_second)}, effective time: {gv.effective_sec}, game ticks: {gv.gGameTicks}, '
             f'Avg Speed: {gv.average_game_speed:.2f}, '
             f'Map: {gv.map_name}. '
