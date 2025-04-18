@@ -166,7 +166,9 @@ class Plots:
             color_idx_to_hex_string.get(gv.player_colors[i], "#000000")
             for i in self.player_idx_to_plot
         ]
-        self.labels = [gv.player_names[i] for i in self.player_idx_to_plot]
+
+        # Note, if player's name begins with underscore "_", its label won't show.
+        self.labels = [" " + gv.player_names[i] for i in self.player_idx_to_plot]  # Add a leading space
 
     def plot_economy(self, root):
         plot_window = tk.Toplevel(root)
