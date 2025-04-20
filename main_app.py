@@ -13,7 +13,7 @@ from gamedata.gamevars import game_vars as gv
 from gamedata.unitsdata import *
 from enums import *
 
-from GetProcessIDctypes import get_d2k_pid
+from GetProcessIDctypes import get_d2k_pid, get_module_base_address
 import tkinter as tk
 from tkinter import ttk
 
@@ -683,6 +683,8 @@ def monitor_process():
         pid = get_d2k_pid()
         if pid is not None:
             print(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Dune2000 process found.")
+            dll_base = get_module_base_address(pid, "effi.dll")
+            print(f"effi.dll base address: 0x{dll_base:08X}")
             global_handle.open_handle(pid)  # open the handle hooked to d2k process
             root.after(100, monitor_process)  # delay 0.1s
         else:
