@@ -106,6 +106,9 @@ class MemoryAddresses:
         self.MCVDeployed_ADDR = 0  # bool[8], special
         self.NetPlayersExt_ADDR = 0  # Special: need to jump twice. 24-byte * 6
         self.StatsDmpBuffer_ADDR = 0  # Special: need to jump twice. static char StatsDmpBuffer[1024 * 20];
+
+        # dll
+        self.effi_dll_base = 0  # effi.dll module base address
         if self._handle:
             self.initialize_addresses()
 
@@ -114,6 +117,12 @@ class MemoryAddresses:
 
     def set_handle(self, handle):
         self._handle = handle
+
+    def set_effi_dll_base(self, addr):
+        self.effi_dll_base = addr
+
+    def get_effi_dll_base(self):
+        return self.effi_dll_base
 
     def initialize_addresses(self):
         self.CNC_MAP_NAME = self.locate_address(CNC_MAP_NAME_ENTRY_POINT, CNC_MAP_NAME_APPEAR_OFFSET)

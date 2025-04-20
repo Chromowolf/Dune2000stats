@@ -40,6 +40,7 @@ from find_cliques import find_maximal_cliques_with_pivot
 from redirect_output import setup_logging, close_logging
 
 from file_operations import export_stats, import_stats, dump_game_data  # Import the functions from the new module
+from effi_dll.effi_dll_patcher import patch_effi_dll_in_memory
 
 # Suppress FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated...
 warnings.simplefilter(action='ignore', category=FutureWarning)
@@ -642,6 +643,7 @@ def init_at_running():
 
     print(f"[Info] EXE info initialized!")
 
+
 def monitor_process():
     global n, exe_initialized
     if global_handle:  # is running
@@ -683,9 +685,15 @@ def monitor_process():
         pid = get_d2k_pid()
         if pid is not None:
             print(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Dune2000 process found.")
-            dll_base = get_module_base_address(pid, "effi.dll")
-            print(f"effi.dll base address: 0x{dll_base:08X}")
             global_handle.open_handle(pid)  # open the handle hooked to d2k process
+            # Consider delaying the dll module scan...
+            effi_dll_base = get_module_base_address(pid, "effi.dll")
+            if not effi_dll_base:
+                print(f"[Warning] effi.dll not found!")
+            else:
+                print(f"effi.dll base address: 0x{effi_dll_base:08X}")
+                mem.set_effi_dll_base(effi_dll_base)
+                patch_effi_dll_in_memory()
             root.after(100, monitor_process)  # delay 0.1s
         else:
             if n < 1:

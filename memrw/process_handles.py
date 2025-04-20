@@ -48,17 +48,17 @@ class ProcessHandle:
         ctypes.windll.kernel32.GetExitCodeProcess(self._handle, ctypes.byref(self._exit_code))
         return self._exit_code.value
 
-    # def write_to_memory(self, mem_addr, data):
-    #     """
-    #     :param mem_addr: the address to write to. A python integer like 0x798538
-    #     :param data: any data type in ctype, for example ctype.c_uint32(123), or even C structure object.
-    #     """
-    #     if self._handle is None:
-    #         raise Exception(f"Handle not initialize!")
-    #     validate_memory_address(mem_addr)
-    #     if not ctypes.windll.kernel32.WriteProcessMemory(self._handle, mem_addr, ctypes.byref(data),
-    #                                                      ctypes.sizeof(data), None):
-    #         Exception(f"Could not write to process memory 0x{mem_addr:08X}. Error code: {ctypes.GetLastError()}")
+    def write_data(self, mem_addr, data):
+        """
+        :param mem_addr: the address to write to. A python integer like 0x798538
+        :param data: any data type in ctype, for example ctype.c_uint32(123), or even C structure object.
+        """
+        if self._handle is None:
+            raise Exception(f"Handle not initialize!")
+        validate_memory_address(mem_addr)
+        if not ctypes.windll.kernel32.WriteProcessMemory(self._handle, mem_addr, ctypes.byref(data),
+                                                         ctypes.sizeof(data), None):
+            Exception(f"Could not write to process memory 0x{mem_addr:08X}. Error code: {ctypes.GetLastError()}")
 
     # def write_to_memory_masked(self, mem_addr, data, bitmask):
     #     """
@@ -101,6 +101,7 @@ class ProcessHandle:
         return buffer
 
     read_from_memory = read_data  # alias
+    write_to_memory = write_data  # alias
 
     def read_simple_data(self, mem_addr, buffer):
         """
@@ -129,6 +130,6 @@ class ProcessHandle:
             self._handle = None
 
 
-# global_handle = ProcessHandle(access_right=PROCESS_VM_READ | PROCESS_VM_WRITE | PROCESS_VM_OPERATION)  # Need operation and write access
+global_handle = ProcessHandle(access_right=PROCESS_VM_READ | PROCESS_VM_WRITE | PROCESS_VM_OPERATION)  # Need operation and write access
 # global_handle = ProcessHandle(access_right=PROCESS_VM_READ | PROCESS_VM_OPERATION)  # auto closed after open
-global_handle = ProcessHandle()  # Read only
+# global_handle = ProcessHandle()  # Read only
