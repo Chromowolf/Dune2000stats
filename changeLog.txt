@@ -1,3 +1,8 @@
+2025-04-21 [v1.05]
+Fixed a bug in the plot where the graph would not show the legend for player names starting with an underscore ("_").
+Added the functionality to auto-patch effi.dll in memory. You no longer need to manually update effi.dll when the game executable is updated. In-game stats from effi.dll are always available whenever you open this app.
+Added player info to the auto-saved stats files for every game.
+
 2025-03-24 [v1.04]
 Fixed a bug in v1.03 caused by using an updated version of NumPy (2.2.1), which led to incompatibility with older versions of stats .pkl files.
 Added back the "total freeze seconds" to the summary stats table.

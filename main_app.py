@@ -626,7 +626,19 @@ def init_at_running():
     Run once right after dune2000 exe is started (after Mission::LoadVarsFile()). Initializing all necessary memory addresses
     """
     mem.set_handle(global_handle)
-    mem.initialize_addresses()
+    mem.initialize_addresses()  # Must be called before effi.dll patching
+
+    pid = global_handle.get_pid()
+    if pid:
+        effi_dll_base = get_module_base_address(pid, "effi.dll")
+        if not effi_dll_base:
+            print(f"[Warning] effi.dll not found!")
+        else:
+            print(f"[Info] effi.dll base address: 0x{effi_dll_base:08X}")
+            mem.set_effi_dll_base(effi_dll_base)
+            # Must be called after UNITS_TABLE and BUILDINGS_TABLE memories are obtained!!!
+            patch_effi_dll_in_memory()
+
     # print(f"[Debug] Map Name At 0x{mem.CNC_MAP_NAME:08X}")
     print(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}:")
     # print(f"[Debug] SpawnerActive At 0x{mem.SpawnerActive_ADDR:08X}")
@@ -686,14 +698,6 @@ def monitor_process():
         if pid is not None:
             print(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Dune2000 process found.")
             global_handle.open_handle(pid)  # open the handle hooked to d2k process
-            # Consider delaying the dll module scan...
-            effi_dll_base = get_module_base_address(pid, "effi.dll")
-            if not effi_dll_base:
-                print(f"[Warning] effi.dll not found!")
-            else:
-                print(f"effi.dll base address: 0x{effi_dll_base:08X}")
-                mem.set_effi_dll_base(effi_dll_base)
-                patch_effi_dll_in_memory()
             root.after(100, monitor_process)  # delay 0.1s
         else:
             if n < 1:

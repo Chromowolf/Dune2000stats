@@ -4,6 +4,9 @@ from effi_dll.effi_patch_offsets import get_units_patched_offsets, get_buildings
 import ctypes
 
 def patch_effi_dll_in_memory():
+    if not mem.UNITS_OWNED_TABLE_CNC or not mem.UNITS_OWNED_TABLE_CNC:
+        print(f"[Warning] Haven't obtained units table and buildings table memory addresses, cannot patch.")
+        return
     effi_dll_base = mem.get_effi_dll_base()
 
     units_patched_offsets = get_units_patched_offsets(effi_dll_base)
@@ -21,12 +24,12 @@ def patch_effi_dll_in_memory():
             need_patch = True
 
     if need_patch:
-        print(f"Patching effi.dll in memory...")
+        print(f"[Info] Patching effi.dll in memory...")
         for addr in units_patched_offsets:
             global_handle.write_data(addr, ctypes.c_uint32(mem.UNITS_OWNED_TABLE_CNC))
             # print(f"Patching units table to: 0x{addr:08X}")
-        print(f"Units table patched to effi.dll!")
+        print(f"[Info] Units table patched to effi.dll!")
         for addr in buildings_patched_offsets:
             global_handle.write_data(addr, ctypes.c_uint32(mem.BUILDINGS_OWNED_TABLE_CNC))
             # print(f"Patching buildings table to: 0x{addr:08X}")
-        print(f"Buildings table patched to effi.dll!")
+        print(f"[Info] Buildings table patched to effi.dll!")

@@ -118,6 +118,9 @@ class ProcessHandle:
             Exception(f"Could not read process memory 0x{mem_addr:08X}. Error code: {ctypes.GetLastError()}")
         return buffer.value
 
+    def get_pid(self):
+        return self._pid
+
     def get_last_bytes_read(self):
         return self._bytes_read
 
