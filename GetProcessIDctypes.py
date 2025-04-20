@@ -108,7 +108,7 @@ def get_module_base_address(pid, module_name):
     found = False
     base_addr = None
 
-    print(f"--- Searching for module '{module_name}' in PID {pid} ---")  # Added for clarity
+    print(f"[Info] Searching for module '{module_name}' in PID {pid}...")  # Added for clarity
     if ctypes.windll.kernel32.Module32First(hSnapshot, ctypes.byref(me32)):
         while True:
             mod_name = me32.szModule.decode("utf-8").rstrip('\x00').lower()
