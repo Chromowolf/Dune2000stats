@@ -46,8 +46,8 @@ from effi_dll.effi_dll_patcher import patch_effi_dll_in_memory
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
 debug_mode = False
-version_list = [1, 0, 4]
-version_date_str = "2025-03-24"
+version_list = [1, 0, 5]
+version_date_str = "2025-04-21"
 version_string = f"Version {version_list[0]}.{version_list[1]}{version_list[2]}"
 
 in_game = False
