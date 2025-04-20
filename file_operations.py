@@ -7,6 +7,12 @@ import os
 
 folder_name = "stats"
 
+def make_filename_safe_replace(s, replacement='_'):
+    for char in '<>:"/\\|?*':
+        s = s.replace(char, replacement)
+    s = s.strip(' .')
+    return s or "NONAME"
+
 def dump_game_data(class_instance: GameVariable, path=None):
     """
     Serializes a class instance and saves it to a file using pickle, overwriting any existing file without warning.
@@ -22,7 +28,9 @@ def dump_game_data(class_instance: GameVariable, path=None):
     # Ensure the folder exists
     os.makedirs(folder_name, exist_ok=True)
     stats_timestamp = class_instance.game_start_timestamp if class_instance.game_start_timestamp else datetime.now()
-    file_path = os.path.join(folder_name, f"game_stats_{stats_timestamp.strftime("%Y%m%d_%H%M%S")}.pkl")
+    player_names_str = "+".join([make_filename_safe_replace(nm) for nm in class_instance.player_names])
+    default_file_name = f"game_stats_{stats_timestamp.strftime("%Y%m%d_%H%M%S")}_{player_names_str}.pkl"
+    file_path = os.path.join(folder_name, default_file_name)
     if path:
         file_path = path
 
@@ -76,6 +84,7 @@ def load_pickle(filepath):
         raise FileNotFoundError(f"File not found: {filepath}")
 
     # 1. Check file extension first (quick check)
+    is_gzipped = False
     if filepath.endswith('.gz'):
         is_gzipped = True
     else:
