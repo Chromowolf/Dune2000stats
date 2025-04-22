@@ -13,7 +13,7 @@ from gamedata.gamevars import game_vars as gv
 from gamedata.unitsdata import *
 from enums import *
 
-from GetProcessIDctypes import get_d2k_pid, get_module_base_address
+from GetProcessIDctypes import get_d2k_pid
 import tkinter as tk
 from tkinter import ttk
 
@@ -46,9 +46,9 @@ from effi_dll.effi_dll_patcher import patch_effi_dll_in_memory
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
 debug_mode = False
-version_list = [1, 0, 5]
-version_date_str = "2025-04-21"
-version_string = f"Version {version_list[0]}.{version_list[1]}{version_list[2]}"
+version_list = [1, 0, 6]
+version_date_str = "2025-04-22"
+version_string = f"Version {version_list[0]}.{version_list[1]}{version_list[2]} (debug)"
 
 in_game = False
 in_game_prev = False  # if the game starts when last time we check
@@ -627,17 +627,10 @@ def init_at_running():
     """
     mem.set_handle(global_handle)
     mem.initialize_addresses()  # Must be called before effi.dll patching
+    # debug:
+    print(f"[Info] EXE full path: {global_handle.get_exe_path()}")
 
-    pid = global_handle.get_pid()
-    if pid:
-        effi_dll_base = get_module_base_address(pid, "effi.dll")
-        if not effi_dll_base:
-            print(f"[Warning] effi.dll not found!")
-        else:
-            print(f"[Info] effi.dll base address: 0x{effi_dll_base:08X}")
-            mem.set_effi_dll_base(effi_dll_base)
-            # Must be called after UNITS_TABLE and BUILDINGS_TABLE memories are obtained!!!
-            patch_effi_dll_in_memory()
+    patch_effi_dll_in_memory(debug=True)
 
     # print(f"[Debug] Map Name At 0x{mem.CNC_MAP_NAME:08X}")
     print(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}:")

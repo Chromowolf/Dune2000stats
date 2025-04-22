@@ -5,6 +5,7 @@ PROCESS_VM_WRITE = 0x20  # (Together with 0x0008?) Grant right to get exit code 
 PROCESS_VM_OPERATION = 0x0008  # (Together with 0x20?) Grant right to get exit code and write
 PROCESS_QUERY_INFORMATION = 0x0400  # Grant right to get exit code
 ALL_ACCESS = 0x1F0FFF
+MAX_PATH = 260
 
 def validate_memory_address(mem_addr):
     if not (0 <= mem_addr <= 0xFFFFFFFF):
@@ -14,6 +15,7 @@ class ProcessHandle:
     def __init__(self, pid=None, access_right=PROCESS_VM_READ | PROCESS_QUERY_INFORMATION):
         self._handle = None
         self._pid = pid
+        self._exe_path = ""
         self._access_right = access_right
         self._bytes_read = ctypes.c_uint32(0)  # number of bytes read, used in:
         # WriteReadMemory(...,ctypes.byref(self._bytes_read))
@@ -36,13 +38,39 @@ class ProcessHandle:
             self._pid = pid
 
         if not self._pid:
-            raise Exception(f"Could not open the handel: pid not defined!")
+            raise Exception(f"Could not open the handle: pid not defined!")
         self._handle = ctypes.windll.kernel32.OpenProcess(access_right_used, False, self._pid)
 
         if not self._handle:
             raise Exception(f"Could not open process {self._pid}. Error code: {ctypes.GetLastError()}")
 
         print(f"Handle hooked to process {self._pid}.")
+
+        # Get exe path
+        self._exe_path = self._read_exe_path()
+
+    def _read_exe_path(self):
+        exe_path_buffer = ctypes.create_string_buffer(MAX_PATH)
+        # hModule is 0 to get the main module
+        result = ctypes.windll.psapi.GetModuleFileNameExA(
+            self._handle,
+            0,  # hModule = 0 means get the path of the executable file of the process
+            exe_path_buffer,
+            MAX_PATH
+        )
+        if not result:
+            print(f"[Warning] Could not get executable path for pid {self._pid}")
+            return ""
+        exe_path_bytes = exe_path_buffer.value
+        try:
+            return exe_path_bytes.decode('mbcs').rstrip('\x00')
+        except Exception as e:
+            # Decoding failed, return empty string (caller will handle)
+            print(f"[Error] Could not decode executable path for pid {self._pid}: {exe_path_bytes}. {e}")
+            return ""
+
+    def get_exe_path(self):
+        return self._exe_path
 
     def get_exit_code(self):
         ctypes.windll.kernel32.GetExitCodeProcess(self._handle, ctypes.byref(self._exit_code))

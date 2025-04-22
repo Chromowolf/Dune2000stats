@@ -88,7 +88,7 @@ def get_process_pid(target_process_names=('dune2000.exe', "dune2000-spawn.exe"),
     return d2k_pid
 
 
-def get_module_base_address(pid, module_name):
+def get_module_base_address(pid, module_name, debug=False):
     # Combine the flags to get both 64-bit and 32-bit modules
     # This is crucial when a 64-bit process inspects a 32-bit process
     # If we do not include TH32CS_SNAPMODULE32, then effi.dll will not be found!
@@ -109,11 +109,11 @@ def get_module_base_address(pid, module_name):
     base_addr = None
 
     print(f"[Info] Searching for module '{module_name}' in PID {pid}...")  # Added for clarity
+    mod_names_found = []
     if ctypes.windll.kernel32.Module32First(hSnapshot, ctypes.byref(me32)):
         while True:
             mod_name = me32.szModule.decode("utf-8").rstrip('\x00').lower()
-            # Debug
-            # print(f"Module name: {mod_name}")
+            mod_names_found.append(mod_name)
             if mod_name == module_name.lower():
                 base_addr = ctypes.cast(me32.modBaseAddr, ctypes.c_void_p).value
                 found = True
@@ -122,6 +122,9 @@ def get_module_base_address(pid, module_name):
                 break
     ctypes.windll.kernel32.CloseHandle(hSnapshot)
     if not found:
-        print(f"[Error] get_module_base_address: Module {module_name} not found in process {pid}")
+        print(f"[Error] get_module_base_address: Module {module_name} not found in process {pid}.")
+        if debug:
+            for mod_n in mod_names_found:
+                print(f"Module name: {mod_n}")
         return 0
     return base_addr
