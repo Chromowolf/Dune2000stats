@@ -86,7 +86,7 @@ class ProcessHandle:
         validate_memory_address(mem_addr)
         if not ctypes.windll.kernel32.WriteProcessMemory(self._handle, mem_addr, ctypes.byref(data),
                                                          ctypes.sizeof(data), None):
-            Exception(f"Could not write to process memory 0x{mem_addr:08X}. Error code: {ctypes.GetLastError()}")
+            raise Exception(f"Could not write to process memory 0x{mem_addr:08X}. Error code: {ctypes.GetLastError()}")
 
     # def write_to_memory_masked(self, mem_addr, data, bitmask):
     #     """
@@ -101,7 +101,7 @@ class ProcessHandle:
     #     if not ctypes.windll.kernel32.ReadProcessMemory(self._handle, mem_addr,
     #                                                     ctypes.byref(temp_data), ctypes.sizeof(data),
     #                                                     ctypes.byref(self._bytes_read)):
-    #         Exception(f"Could not read process memory 0x{mem_addr:08X}. Error code: {ctypes.GetLastError()}")
+    #         raise Exception(f"Could not read process memory 0x{mem_addr:08X}. Error code: {ctypes.GetLastError()}")
     #
     #     # Clear the bits to be modified
     #     temp_data.value &= ~bitmask
@@ -111,7 +111,7 @@ class ProcessHandle:
     #
     #     if not ctypes.windll.kernel32.WriteProcessMemory(self._handle, mem_addr, ctypes.byref(temp_data),
     #                                                      ctypes.sizeof(temp_data), None):
-    #         Exception(f"Could not write to process memory 0x{mem_addr:08X}. Error code: {ctypes.GetLastError()}")
+    #         raise Exception(f"Could not write to process memory 0x{mem_addr:08X}. Error code: {ctypes.GetLastError()}")
 
     def read_data(self, mem_addr, buffer):
         """
@@ -125,7 +125,7 @@ class ProcessHandle:
         if not ctypes.windll.kernel32.ReadProcessMemory(self._handle, mem_addr,
                                                         ctypes.byref(buffer), ctypes.sizeof(buffer),
                                                         ctypes.byref(self._bytes_read)):
-            Exception(f"Could not read process memory 0x{mem_addr:08X}. Error code: {ctypes.GetLastError()}")
+            raise Exception(f"Could not read process memory 0x{mem_addr:08X}. Error code: {ctypes.GetLastError()}")
         return buffer
 
     read_from_memory = read_data  # alias
@@ -143,7 +143,7 @@ class ProcessHandle:
         if not ctypes.windll.kernel32.ReadProcessMemory(self._handle, mem_addr,
                                                         ctypes.byref(buffer), ctypes.sizeof(buffer),
                                                         ctypes.byref(self._bytes_read)):
-            Exception(f"Could not read process memory 0x{mem_addr:08X}. Error code: {ctypes.GetLastError()}")
+            raise Exception(f"Could not read process memory 0x{mem_addr:08X}. Error code: {ctypes.GetLastError()}")
         return buffer.value
 
     def get_pid(self):
