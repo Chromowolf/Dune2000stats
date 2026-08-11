@@ -45,7 +45,10 @@ TOTAL_BUILDINGS_KILLED = 0x7BD504
 #############################
 # CNCnet
 #############################
-# CNC Map name
+# Map name
+ORIG_MAP_FILE_NAME = 0x6F9840
+
+# CNC Map name (When SpawnerActive is True)
 CNC_MAP_NAME_ENTRY_POINT = 0x40D828  # /src/spawner/stats.asm#L48 UseSpawnIniMapNameIfMapNotInStringTable
 CNC_MAP_NAME_APPEAR_OFFSET = 30
 

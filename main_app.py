@@ -278,7 +278,7 @@ def exec_in_game():
     # Need to discard the players who have left game!!!!
     if gv.number_of_human >= 1:  # if failed to connect to game, then gv.number_of_human is 0
         valid_received_game_ticks = gv.received_game_ticks[:gv.number_of_human][~gv.has_quitted[:gv.number_of_human]]
-        if len(valid_received_game_ticks) > 0:  # Not zero length, i.e. at least 1 human player hasn't quitted.
+        if len(valid_received_game_ticks) > 0:  # Not zero length, i.e. at least 1 human player hasn't quit.
             max_game_tick = np.max(gv.received_game_ticks[:gv.number_of_human][~gv.has_quitted[:gv.number_of_human]])
             min_game_tick = np.min(gv.received_game_ticks[:gv.number_of_human][~gv.has_quitted[:gv.number_of_human]])
             min_max_diff_game_tick = max_game_tick - min_game_tick
@@ -351,9 +351,16 @@ def on_game_start():
     gv.map_width = global_handle.read_simple_data(0x517DE8, ctypes.c_uint32())
     gv.map_height = global_handle.read_simple_data(0x517DEC, ctypes.c_uint32())
     map_name_bytes = global_handle.read_simple_data(mem.CNC_MAP_NAME, ctypes.create_string_buffer(60))
+    map_file_name_bytes = global_handle.read_simple_data(ORIG_MAP_FILE_NAME, ctypes.create_string_buffer(60))
     map_hash_bytes = global_handle.read_simple_data(0x797638, ctypes.create_string_buffer(60))
     map_hash_bytes_cnc = global_handle.read_simple_data(mem.CNC_MAP_HASH, ctypes.create_string_buffer(60))
-    gv.map_name = map_name_bytes.decode('utf-8')
+
+    map_name_decoded = map_name_bytes.decode('utf-8')
+    map_file_name_decoded = map_file_name_bytes.decode('utf-8')
+    if gv.spawner_active:
+        gv.map_name = map_name_decoded
+    else:
+        gv.map_name = map_file_name_decoded
     gv.gNetMap = map_hash_bytes.decode('utf-8')
     gv.gNetMap_cnc = map_hash_bytes_cnc.decode('utf-8')
     gv.me = global_handle.read_simple_data(0x798544, ctypes.c_int32())
@@ -364,8 +371,9 @@ def on_game_start():
     print(f"[{gv.game_start_timestamp.strftime('%Y-%m-%d %H:%M:%S')}]: New game detected! Game ticks: {gv.gGameTicks}")
     print(f"[Debug] SpawnerActive = {global_handle.read_simple_data(mem.SpawnerActive_ADDR, ctypes.c_bool())}")
     # print(f"{gv.map_width=}, {gv.map_height=}, {gv.game_width=}, {gv.game_height=}")
-    print(f"Map name: {gv.map_name}")
-    print(f"Map file name: {gv.gNetMap}")
+    print(f"Result map name: {gv.map_name}")
+    print(f"Map file name: {map_file_name_decoded}")
+    print(f"Map file (gNetMap): {gv.gNetMap}")
     print(f"Map file name (cnc): {gv.gNetMap_cnc}")
 
     gv.player_names = []
