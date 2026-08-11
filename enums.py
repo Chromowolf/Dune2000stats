@@ -36,6 +36,7 @@ GES_CONNECTIONLOST = 4
 GES_WASHGAME = 5
 GES_DRAWGAME = 6
 GES_UNKNOWNENDSTATE = 7
+DEFAULT_ENDSTATE = 8  # GameEndState (0x4DB9E0) default value
 
 game_end_state_dict = {
     GES_ENDEDNORMALLY: "Ended normally",
@@ -46,6 +47,7 @@ game_end_state_dict = {
     GES_WASHGAME: "Wash game",
     GES_DRAWGAME: "Draw game",
     GES_UNKNOWNENDSTATE: "Unknown end state",
+    DEFAULT_ENDSTATE: "No spawner default (8)",
 }
 
 color_idx_to_hex_string = {
