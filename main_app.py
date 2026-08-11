@@ -128,7 +128,7 @@ def exec_in_game():
         gv.has_buildings = np.array(global_handle.read_from_memory(0x6B87C0, (ctypes.c_bool * 8)()))
         gv.has_nothing = ~(gv.has_units | gv.has_buildings)
 
-        # If player has quitted program
+        # If player has quit program
         gv.left_game_at = np.array([
             global_handle.read_simple_data(0x6B91F8 + 60 * idx + 0x30, ctypes.c_int32()) for idx in range(8)
         ])
@@ -165,9 +165,9 @@ def exec_in_game():
                 gv.finishing_place[p] = gv.number_of_remaining_player
                 gv.number_of_remaining_player -= 1
 
-            # Update has_quitted
-            if not gv.has_quitted[p] and gv.left_game_at[p] >= 0:
-                gv.has_quitted[p] = True
+            # Update has_quit
+            if not gv.has_quit[p] and gv.left_game_at[p] >= 0:
+                gv.has_quit[p] = True
                 print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}]: Player {gv.player_names[p]} has left the game at game tick = {gv.gGameTicks}")
 
             # Update victory status
@@ -277,10 +277,10 @@ def exec_in_game():
 
     # Need to discard the players who have left game!!!!
     if gv.number_of_human >= 1:  # if failed to connect to game, then gv.number_of_human is 0
-        valid_received_game_ticks = gv.received_game_ticks[:gv.number_of_human][~gv.has_quitted[:gv.number_of_human]]
+        valid_received_game_ticks = gv.received_game_ticks[:gv.number_of_human][~gv.has_quit[:gv.number_of_human]]
         if len(valid_received_game_ticks) > 0:  # Not zero length, i.e. at least 1 human player hasn't quit.
-            max_game_tick = np.max(gv.received_game_ticks[:gv.number_of_human][~gv.has_quitted[:gv.number_of_human]])
-            min_game_tick = np.min(gv.received_game_ticks[:gv.number_of_human][~gv.has_quitted[:gv.number_of_human]])
+            max_game_tick = np.max(gv.received_game_ticks[:gv.number_of_human][~gv.has_quit[:gv.number_of_human]])
+            min_game_tick = np.min(gv.received_game_ticks[:gv.number_of_human][~gv.has_quit[:gv.number_of_human]])
             min_max_diff_game_tick = max_game_tick - min_game_tick
             gv.potential_laggers = np.where(gv.received_game_ticks[:gv.number_of_human] == min_game_tick)[0]  # 1 dimensional array, player indexes
             potential_laggers_names = [gv.player_names[lag_pl] for lag_pl in gv.potential_laggers]
@@ -350,10 +350,10 @@ def on_game_start():
     gv.game_height = global_handle.read_simple_data(0x4EB024, ctypes.c_uint32())
     gv.map_width = global_handle.read_simple_data(0x517DE8, ctypes.c_uint32())
     gv.map_height = global_handle.read_simple_data(0x517DEC, ctypes.c_uint32())
-    map_name_bytes = global_handle.read_simple_data(mem.CNC_MAP_NAME, ctypes.create_string_buffer(60))
+    map_name_bytes = global_handle.read_simple_data(mem.SPAWNER_MAP_NAME, ctypes.create_string_buffer(60))
     map_file_name_bytes = global_handle.read_simple_data(ORIG_MAP_FILE_NAME, ctypes.create_string_buffer(60))
     map_hash_bytes = global_handle.read_simple_data(0x797638, ctypes.create_string_buffer(60))
-    map_hash_bytes_cnc = global_handle.read_simple_data(mem.CNC_MAP_HASH, ctypes.create_string_buffer(60))
+    map_hash_bytes_cnc = global_handle.read_simple_data(mem.SPAWNER_MAP_SCRIPT, ctypes.create_string_buffer(60))
 
     map_name_decoded = map_name_bytes.decode('utf-8')
     map_file_name_decoded = map_file_name_bytes.decode('utf-8')
@@ -362,7 +362,7 @@ def on_game_start():
     else:
         gv.map_name = map_file_name_decoded
     gv.gNetMap = map_hash_bytes.decode('utf-8')
-    gv.gNetMap_cnc = map_hash_bytes_cnc.decode('utf-8')
+    gv.map_script = map_hash_bytes_cnc.decode('utf-8')
     gv.me = global_handle.read_simple_data(0x798544, ctypes.c_int32())
     gv.my_offset = gv.me * 0x26990
     gv.game_start_timestamp = datetime.now()
@@ -373,8 +373,8 @@ def on_game_start():
     # print(f"{gv.map_width=}, {gv.map_height=}, {gv.game_width=}, {gv.game_height=}")
     print(f"Result map name: {gv.map_name}")
     print(f"Map file name: {map_file_name_decoded}")
-    print(f"Map file (gNetMap): {gv.gNetMap}")
-    print(f"Map file name (cnc): {gv.gNetMap_cnc}")
+    print(f"gNetMap (0x797638): {gv.gNetMap}")
+    print(f"MapScript: {gv.map_script}")
 
     gv.player_names = []
     gv.number_of_AI = global_handle.read_simple_data(0x4E3B0C, ctypes.c_int32())
@@ -640,7 +640,7 @@ def init_at_running():
 
     patch_effi_dll_in_memory(debug=True)
 
-    # print(f"[Debug] Map Name At 0x{mem.CNC_MAP_NAME:08X}")
+    # print(f"[Debug] Map Name At 0x{mem.SPAWNER_MAP_NAME:08X}")
     print(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}:")
     # print(f"[Debug] SpawnerActive At 0x{mem.SpawnerActive_ADDR:08X}")
     # print(f"[Debug] UnitTracker At 0x{mem.UNITS_OWNED_TABLE_CNC:08X}")

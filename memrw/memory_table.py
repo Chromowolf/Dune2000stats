@@ -48,13 +48,13 @@ TOTAL_BUILDINGS_KILLED = 0x7BD504
 # Map name
 ORIG_MAP_FILE_NAME = 0x6F9840
 
-# CNC Map name (When SpawnerActive is True)
-CNC_MAP_NAME_ENTRY_POINT = 0x40D828  # /src/spawner/stats.asm#L48 UseSpawnIniMapNameIfMapNotInStringTable
-CNC_MAP_NAME_APPEAR_OFFSET = 30
+# Spawner Map name (When SpawnerActive is True)
+SPAWNER_MAP_NAME_ENTRY_POINT = 0x40D828  # /src/spawner/stats.asm#L48 UseSpawnIniMapNameIfMapNotInStringTable
+SPAWNER_MAP_NAME_APPEAR_OFFSET = 30
 
-# CNC Map hash (MapScript)
-CNC_MAP_HASH_ENTRY_POINT = 0x4752FE  # /src/spawner/mission-events.asm#L43 LoadCustomOnlineMapScript
-CNC_MAP_HASH_APPEAR_OFFSET = 10
+# MapScript (equivalent to the map's hash)
+SPAWNER_MAP_SCRIPT_ENTRY_POINT = 0x4752FE  # /src/spawner/mission-events.asm#L43 LoadCustomOnlineMapScript
+SPAWNER_MAP_SCRIPT_APPEAR_OFFSET = 10
 
 
 # SpawnerActive
@@ -97,8 +97,8 @@ class MemoryAddresses:
         self._handle = handle
 
         # Addresses
-        self.CNC_MAP_NAME = 0  # char[60]
-        self.CNC_MAP_HASH = 0  # char[50] ?
+        self.SPAWNER_MAP_NAME = 0  # char[60], the MapName: gstring MapName, "", 60 in stats.asm
+        self.SPAWNER_MAP_SCRIPT = 0  # char[128], the MapScript, defined in spawner-func.c
         self.SpawnerActive_ADDR = 0  # Bool
         self.BUILDINGS_OWNED_TABLE_CNC = 0  # int32[8][62]
         self.UNITS_OWNED_TABLE_CNC = 0  # int32[8]
@@ -128,8 +128,8 @@ class MemoryAddresses:
         return self.effi_dll_base
 
     def initialize_addresses(self):
-        self.CNC_MAP_NAME = self.locate_address(CNC_MAP_NAME_ENTRY_POINT, CNC_MAP_NAME_APPEAR_OFFSET)
-        self.CNC_MAP_HASH = self.locate_address(CNC_MAP_HASH_ENTRY_POINT, CNC_MAP_HASH_APPEAR_OFFSET)
+        self.SPAWNER_MAP_NAME = self.locate_address(SPAWNER_MAP_NAME_ENTRY_POINT, SPAWNER_MAP_NAME_APPEAR_OFFSET)
+        self.SPAWNER_MAP_SCRIPT = self.locate_address(SPAWNER_MAP_SCRIPT_ENTRY_POINT, SPAWNER_MAP_SCRIPT_APPEAR_OFFSET)
         self.SpawnerActive_ADDR = self.locate_address(SpawnerActive_ENTRY_POINT, SpawnerActive_APPEAR_OFFSET)
         self.BUILDINGS_OWNED_TABLE_CNC = self.locate_address(BuildingTracker_ENTRY_POINT, BuildingTracker_APPEAR_OFFSET)
         self.UNITS_OWNED_TABLE_CNC = self.locate_address(UnitTracker_ENTRY_POINT, UnitTracker_APPEAR_OFFSET)

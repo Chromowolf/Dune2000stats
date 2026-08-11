@@ -69,7 +69,7 @@ class GameVariable:
 
         self.map_name = ""
         self.gNetMap = ""  # map hash
-        self.gNetMap_cnc = ""  # map hash (cnc)
+        self.map_script = ""  # Identical to gNetMap in most time
 
         self.me = 0  # local_player_index
         self.my_offset = 0  # local_player_offset = local_player_index * 0x26990
@@ -97,7 +97,7 @@ class GameVariable:
         self.number_of_AI = 0  # 0x4E3B0C, gNetAIPlayers
         self.number_of_human = 0  # 0x7984C0, NetPlayerCount
         self.number_of_player = 0  # playerCount = NetPlayerCount + gNetAIPlayers
-        self.number_of_remaining_player = 0  # Players that are not yet winned, defeated.
+        self.number_of_remaining_player = 0  # Players that are not yet won, defeated.
 
         self.NetPlayerCount = -1  # debug. 0x7984C0, NetPlayerCount
         self.NetPlayerCount_prev = -1  # debug. 0x7984C0, NetPlayerCount
@@ -123,7 +123,7 @@ class GameVariable:
         self.has_buildings = np.full(8, False, dtype=bool)  # 0x6B87C0
         self.has_nothing = np.full(8, True, dtype=bool)   # True: no unit or building. Used for victory checking
         self.is_defeated = np.full(8, False, dtype=bool)  # True: not in game, False: in game. True when first time has_nothing, but might still be spectating. Used for finishing place.
-        self.has_quitted = np.full(8, False, dtype=bool)   # True: has quitted program, game ticks no longer increases. False: hasn't quitted yet. Only apply to humna players.
+        self.has_quit = np.full(8, False, dtype=bool)   # True: has quit program, game ticks no longer increases. False: hasn't quit yet. Only apply to human players.
         self.finishing_place = np.full(8, 1, dtype=np.int8)
         self.gDeadOrder = np.full(8, -1, dtype=np.int8)  # 0x797B70 char array
         # self.gDeadOrder_prev = np.full(8, -1, dtype=np.int8)  # 0x797B70 char array
@@ -224,7 +224,7 @@ class GameVariable:
         # (1) Directly produced
         self.units_produced = np.zeros((8, NUM_UNITS), dtype=np.int32)  # 8 players, 30 types of units
         # (2) From starport delivery
-        self.units_from_starport = np.zeros((8, NUM_UNITS), dtype=np.int32)  # starport purchase + reinforments
+        self.units_from_starport = np.zeros((8, NUM_UNITS), dtype=np.int32)  # starport purchase + reinforcements
         # (3) From carryall delivery
         self.reinforcements_from_carryall = np.zeros((8, NUM_UNITS), dtype=np.int32)  # Carryall reinforcement (excluding from ref), currently not implemented
         self.harvs_from_ref = np.zeros((8, NUM_UNITS), dtype=np.int32)  # Harvesters delivered when refineries are built
@@ -298,8 +298,8 @@ class GameVariable:
         self.harvester_count_list = []  # list of current harvesters owned  # Unused
         self.credits_list = []  # list of credits
 
-        self.units_count_list = []  # list of currentlu owned units, (8, NUM_UNITS)
-        self.building_groups_count_list = []  # list of currentlu owned building groups, (8, NUM_BUILDING_GROUPS)
+        self.units_count_list = []  # list of currently owned units, (8, NUM_UNITS)
+        self.building_groups_count_list = []  # list of currently owned building groups, (8, NUM_BUILDING_GROUPS)
 
         self.buildings_killed_detail_list = []
         self.units_killed_detail_list = []
@@ -414,7 +414,7 @@ class GameVariable:
 
         self.spice_list.append(self.spice.copy())  # Must append a copy, because harvester_count is modified in-place
         self.cash_list.append(self.cash.copy())  # Must append a copy, because cash is modified in-place
-        self.credits_list.append(self.spice + self.cash)  # Unnecesary, but legacy
+        self.credits_list.append(self.spice + self.cash)  # Unnecessary, but legacy
         self.spice_harvested_list.append(self.spice_harvested.copy())  # Must append a copy, because spice_harvested is modified in-place
 
         self.power_output_list.append(self.power_output.copy())
