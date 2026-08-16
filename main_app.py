@@ -45,7 +45,7 @@ from effi_dll.effi_dll_patcher import patch_effi_dll_in_memory
 # Suppress FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated...
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
-debug_mode = False
+debug_mode = True
 version_list = [1, 0, 6]
 version_date_str = "2025-04-22"
 version_string = f"Version {version_list[0]}.{version_list[1]}{version_list[2]} (debug)"
@@ -174,6 +174,8 @@ def exec_in_game():
             is_ally = gv.mutual_alliance_matrix[p, :]  # (8, ) bool
             non_ally = np.logical_not(is_ally)  # (8, ) bool
             is_opponent = non_ally & gv.is_player & (~gv.is_spectator)  # (8, ) bool, non-spect, non-ally players
+
+            # Manually decide winning status by checking building exists and unit exists
             if not gv.game_finished and gv.has_nothing[non_ally].all():  # All opponents have nothing
                 gv.game_finished = True
                 gv.victory_status[is_ally] = VICTORY_STATUS_WIN
@@ -355,14 +357,14 @@ def on_game_start():
     map_hash_bytes = global_handle.read_simple_data(0x797638, ctypes.create_string_buffer(60))
     map_hash_bytes_cnc = global_handle.read_simple_data(mem.SPAWNER_MAP_SCRIPT, ctypes.create_string_buffer(60))
 
-    map_name_decoded = map_name_bytes.decode('utf-8')
-    map_file_name_decoded = map_file_name_bytes.decode('utf-8')
+    map_name_decoded = map_name_bytes.decode('ansi', errors='ignore')
+    map_file_name_decoded = map_file_name_bytes.decode('ansi', errors='ignore')
     if gv.spawner_active:
         gv.map_name = map_name_decoded
     else:
         gv.map_name = map_file_name_decoded
-    gv.gNetMap = map_hash_bytes.decode('utf-8')
-    gv.map_script = map_hash_bytes_cnc.decode('utf-8')
+    gv.gNetMap = map_hash_bytes.decode('ansi', errors='ignore')
+    gv.map_script = map_hash_bytes_cnc.decode('ansi', errors='ignore')
     gv.me = global_handle.read_simple_data(0x798544, ctypes.c_int32())
     gv.my_offset = gv.me * 0x26990
     gv.game_start_timestamp = datetime.now()
@@ -391,7 +393,7 @@ def on_game_start():
                                                                ctypes.create_string_buffer(20))
             if player_name_bytes:
                 gv.number_of_human += 1
-                gv.player_names.append(player_name_bytes.decode('utf-8'))
+                gv.player_names.append(player_name_bytes.decode('ansi', errors='ignore'))  # Don't use "utf-8"!
             else:
                 gv.player_names += computer_player_names
                 break
@@ -400,7 +402,7 @@ def on_game_start():
         gv.number_of_human = 1
         local_player_name_bytes = global_handle.read_simple_data(LOCAL_PLAYER_NAME,
                                                                  ctypes.create_string_buffer(20))
-        gv.player_names = [local_player_name_bytes.decode('utf-8')] + computer_player_names
+        gv.player_names = [local_player_name_bytes.decode('ansi', errors='ignore')] + computer_player_names
     else:
         # single player (mission / campaign)
         gv.player_names = ['Atreides', 'Harkonnen', 'Ordos', 'Emperor', 'Fremen', 'Smugglers', 'Mercenaries',
@@ -642,17 +644,17 @@ def init_at_running():
 
     # print(f"[Debug] Map Name At 0x{mem.SPAWNER_MAP_NAME:08X}")
     print(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}:")
-    # print(f"[Debug] SpawnerActive At 0x{mem.SpawnerActive_ADDR:08X}")
-    # print(f"[Debug] UnitTracker At 0x{mem.UNITS_OWNED_TABLE_CNC:08X}")
-    # print(f"[Debug] BuildingTracker At 0x{mem.BUILDINGS_OWNED_TABLE_CNC:08X}")
-    # print(f"[Debug] SpawnerGameEndState At = 0x{mem.SpawnerGameEndState_ADDR:08X}")
-    # # print(f"[Debug] NetPlayersExt_ADDR At 0x{mem.NetPlayersExt_ADDR:08X}")
-    # # print(f"[Debug] MCVDeployed_ADDR At 0x{mem.MCVDeployed_ADDR:08X}")
-    # print(f"[Debug] SpawnerActive = {global_handle.read_simple_data(mem.SpawnerActive_ADDR, ctypes.c_bool())}")
-    # print(f"[Debug] NetPlayerCount = {global_handle.read_simple_data(0x7984C0, ctypes.c_uint8())}")
-    # print(f"[Debug] gNetAIPlayers = {global_handle.read_simple_data(0x4E3B0C, ctypes.c_uint8())}")
-    # print(f"[Debug] StatsDmpBuffer_ADDR At 0x{mem.StatsDmpBuffer_ADDR:08X}")
-    # print(f"[Debug] MeIsSpectator_ADDR At 0x{mem.MeIsSpectator_ADDR:08X}")
+
+    if debug_mode:
+        print(f"[Debug] SpawnerActive at 0x{mem.SpawnerActive_ADDR:06X}")
+        print(f"[Debug] UnitTracker at 0x{mem.UNITS_OWNED_TABLE_CNC:06X}")
+        print(f"[Debug] BuildingTracker at 0x{mem.BUILDINGS_OWNED_TABLE_CNC:06X}")
+        print(f"[Debug] SpawnerGameEndState at = 0x{mem.SpawnerGameEndState_ADDR:06X}")
+        print(f"[Debug] NetPlayersExt_ADDR At 0x{mem.NetPlayersExt_ADDR:06X}")
+        print(f"[Debug] MCVDeployed_ADDR At 0x{mem.MCVDeployed_ADDR:06X}")
+        print(f"[Debug] SpawnerActive = {global_handle.read_simple_data(mem.SpawnerActive_ADDR, ctypes.c_bool())}")
+        print(f"[Debug] StatsDmpBuffer_ADDR At 0x{mem.StatsDmpBuffer_ADDR:06X}")
+        print(f"[Debug] MeIsSpectator_ADDR At 0x{mem.MeIsSpectator_ADDR:06X}")
 
     print(f"[Info] EXE info initialized!")
 
