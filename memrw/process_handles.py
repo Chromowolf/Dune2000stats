@@ -1,9 +1,30 @@
 import ctypes
+from ctypes import wintypes
 
-PROCESS_VM_READ = 0x10
-PROCESS_VM_WRITE = 0x20  # (Together with 0x0008?) Grant right to get exit code and write
-PROCESS_VM_OPERATION = 0x0008  # (Together with 0x20?) Grant right to get exit code and write
-PROCESS_QUERY_INFORMATION = 0x0400  # Grant right to get exit code
+
+PROCESS_VM_READ = 0x0010
+PROCESS_VM_WRITE = 0x0020
+PROCESS_VM_OPERATION = 0x0008
+PROCESS_QUERY_INFORMATION = 0x0400
+PROCESS_QUERY_LIMITED_INFORMATION = 0x1000
+
+
+kernel32 = ctypes.WinDLL(
+    "kernel32",
+    use_last_error=True,
+)
+
+QueryFullProcessImageNameW = (  # Only query exe, not dll
+    kernel32.QueryFullProcessImageNameW
+)
+QueryFullProcessImageNameW.argtypes = [
+    wintypes.HANDLE,
+    wintypes.DWORD,
+    wintypes.LPWSTR,
+    ctypes.POINTER(wintypes.DWORD),
+]
+QueryFullProcessImageNameW.restype = wintypes.BOOL
+
 ALL_ACCESS = 0x1F0FFF
 MAX_PATH = 260
 
@@ -50,24 +71,28 @@ class ProcessHandle:
         self._exe_path = self._read_exe_path()
 
     def _read_exe_path(self):
-        exe_path_buffer = ctypes.create_string_buffer(MAX_PATH)
-        # hModule is 0 to get the main module
-        result = ctypes.windll.psapi.GetModuleFileNameExA(
-            self._handle,
-            0,  # hModule = 0 means get the path of the executable file of the process
-            exe_path_buffer,
-            MAX_PATH
+        buffer_length = 32768
+        exe_path_buffer = ctypes.create_unicode_buffer(
+            buffer_length
         )
-        if not result:
-            print(f"[Warning] Could not get executable path for pid {self._pid}")
+        size = wintypes.DWORD(buffer_length)
+
+        if not QueryFullProcessImageNameW(
+                self._handle,
+                0,
+                exe_path_buffer,
+                ctypes.byref(size),
+        ):
+            error_code = ctypes.get_last_error()
+            print(
+                f"[Warning] Could not get executable path "
+                f"for pid {self._pid}. "
+                f"Error code: {error_code}"
+            )
             return ""
-        exe_path_bytes = exe_path_buffer.value
-        try:
-            return exe_path_bytes.decode('mbcs').rstrip('\x00')
-        except Exception as e:
-            # Decoding failed, return empty string (caller will handle)
-            print(f"[Error] Could not decode executable path for pid {self._pid}: {exe_path_bytes}. {e}")
-            return ""
+
+        return exe_path_buffer.value
+
 
     def get_exe_path(self):
         return self._exe_path
@@ -163,4 +188,4 @@ class ProcessHandle:
 
 global_handle = ProcessHandle(access_right=PROCESS_VM_READ | PROCESS_VM_WRITE | PROCESS_VM_OPERATION)  # Need operation and write access
 # global_handle = ProcessHandle(access_right=PROCESS_VM_READ | PROCESS_VM_OPERATION)  # auto closed after open
-# global_handle = ProcessHandle()  # Read only
+# global_handle = ProcessHandle()  # Read only. Seem don't need PROCESS_QUERY_INFORMATION?
