@@ -45,10 +45,10 @@ from effi_dll.effi_dll_patcher import patch_effi_dll_in_memory
 # Suppress FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated...
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
-debug_mode = True
-version_list = [1, 0, 6]
-version_date_str = "2025-04-22"
-version_string = f"Version {version_list[0]}.{version_list[1]}{version_list[2]} (debug)"
+debug_mode = False
+version_list = [1, 0, 7]
+version_date_str = "2026-08-23"
+version_string = f"Version {version_list[0]}.{version_list[1]}{version_list[2]}"
 
 in_game = False
 in_game_prev = False  # if the game starts when last time we check
@@ -640,7 +640,7 @@ def init_at_running():
     # debug:
     print(f"[Info] EXE full path: {global_handle.get_exe_path()}")
 
-    patch_effi_dll_in_memory(debug=True)
+    patch_effi_dll_in_memory(debug=False)
 
     # print(f"[Debug] Map Name At 0x{mem.SPAWNER_MAP_NAME:08X}")
     print(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}:")
