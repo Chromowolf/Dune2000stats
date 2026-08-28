@@ -24,7 +24,9 @@ def get_groups_stats(values_array, indices_array, num_groups: int):
     :param num_groups: int
     :return:
     """
-    groups_stats = np.zeros((8, num_groups), dtype=np.int64)  # np.int32 will make pandas table cast it to float on Windows!
+    groups_stats = np.zeros((8, num_groups), dtype=np.int64)  # np.int32 will make pandastable's buggy code cast it to float on Windows
+    # Should change it back to np.int32 when the developer of pandastable fixes this bug
+
     np.add.at(
         groups_stats,
         (slice(None), indices_array),
@@ -78,9 +80,8 @@ class PandasTableApp:
             ##### if coldata.dtype in ['float64','float32','int']:  # np.int32 is an int for Windows!
             #####     coldata = coldata.apply(lambda x: self.setPrecision(x, prec))
             #
-            # Temporarily don't add this line because we already use np.int64
             #
-            # self.table.floatprecision = 0  # Add this line because pandas table might cast it to float!
+            self.table.floatprecision = 0  # Add this line because pandas table might cast it to float!
 
             self.table.showIndex()
             self.table.show()  # This method will call adjustColumnWidths() which overwrite the custom columnwidths。 Also initialize the related attributes
