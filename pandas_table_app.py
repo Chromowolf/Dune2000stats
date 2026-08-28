@@ -24,7 +24,7 @@ def get_groups_stats(values_array, indices_array, num_groups: int):
     :param num_groups: int
     :return:
     """
-    groups_stats = np.zeros((8, num_groups), dtype=np.int32)
+    groups_stats = np.zeros((8, num_groups), dtype=np.int64)  # np.int32 will make pandas table cast it to float on Windows!
     np.add.at(
         groups_stats,
         (slice(None), indices_array),
@@ -72,6 +72,15 @@ class PandasTableApp:
             # If the table hasn't been created, create it
             self.table = Table(self.root, dataframe=self.summary_df, showtoolbar=False, showstatusbar=False)
             # Once the table is linked to a dataframe, then the UI will auto refresh when drag-and-drop the UI, or when functions like redraw() or setRowColors() is called
+
+            # The following line (added on 2026-08-29) resolves the error that pandas table mistakenly cast the int to float of precision 2
+            ##### core.py line 490 inside redrawVisible:
+            ##### if coldata.dtype in ['float64','float32','int']:  # np.int32 is an int for Windows!
+            #####     coldata = coldata.apply(lambda x: self.setPrecision(x, prec))
+            #
+            # Temporarily don't add this line because we already use np.int64
+            #
+            # self.table.floatprecision = 0  # Add this line because pandas table might cast it to float!
 
             self.table.showIndex()
             self.table.show()  # This method will call adjustColumnWidths() which overwrite the custom columnwidths。 Also initialize the related attributes
