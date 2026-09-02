@@ -1,4 +1,4 @@
-import warnings
+# import warnings
 import sys
 import os
 import ctypes
@@ -42,12 +42,12 @@ from redirect_output import setup_logging, close_logging
 from file_operations import export_stats, import_stats, dump_game_data  # Import the functions from the new module
 from effi_dll.effi_dll_patcher import patch_effi_dll_in_memory
 
-# Suppress FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated...
-warnings.simplefilter(action='ignore', category=FutureWarning)
+# Suppress FutureWarning: Down casting object dtype arrays on .fillna, .ffill, .bfill is deprecated...
+# warnings.simplefilter(action='ignore', category=FutureWarning)
 
 debug_mode = False
-version_list = [1, 0, 7]
-version_date_str = "2026-08-23"
+version_list = [1, 0, 8]
+version_date_str = "2026-09-02"
 version_string = f"Version {version_list[0]}.{version_list[1]}{version_list[2]}"
 
 in_game = False
@@ -742,7 +742,7 @@ def update_stats():
     #     print(f"units_owned actual: \n{gv.units_owned}")
 
 
-def refresh_UI():
+def refresh_ui():
     root.geometry(f'{app_width}x{app_height}')
     root.update()
     main_ui.force_redraw_all()
@@ -807,7 +807,7 @@ class MainApp:
         self.app_total_lost_stats = TotalLostTable(self.total_lost_stats_frame)  # The pandas table app
         self.all_pandas_tables.append(self.app_total_lost_stats)
 
-        # refresh_button = ttk.Button(master, text="Refresh", command=refresh_UI)
+        # refresh_button = ttk.Button(master, text="Refresh", command=refresh_ui)
         # refresh_button.pack()
         # Create a frame for buttons at the bottom
         self.button_frame = ttk.Frame(self.root)
@@ -830,7 +830,7 @@ class MainApp:
         # Left buttons
         ###############
         # Refresh button
-        self.refresh_button = ttk.Button(self.left_button_frame, text="Refresh", command=refresh_UI)
+        self.refresh_button = ttk.Button(self.left_button_frame, text="Refresh", command=refresh_ui)
         self.refresh_button.pack(side=tk.LEFT, padx=5, pady=5)
 
         # Import button
