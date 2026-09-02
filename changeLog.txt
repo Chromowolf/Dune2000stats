@@ -1,9 +1,14 @@
+2026-09-02 [v1.08]
+Fixed a bug introduced in the previous release where some tables displayed positive integers as floating-point values (e.g., X.00).
+Added the Chinese version of the change log (changeLog_Chn.txt)
+
 2026-08-23
 Fixed map name for single player
 Added game end state = 8: default state for no-spawner game
 Change player names decoding to ANSI (local) to support non-ASCII names
 Using Windows WCHAR to safely get process and module names
-More systematic way to get Gruntmod variable names
+More systematic way to get Gruntmods variable names
+Upgraded nuitka from 2.6.9 to 4.1.3
 
 2025-04-21 [v1.05]
 Fixed a bug in the plot where the graph would not show the legend for player names starting with an underscore ("_").
